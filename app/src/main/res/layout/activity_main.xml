@@ -28,18 +28,18 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnLogIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="btnLoginClick"
-            android:text="Войти"/>
+            android:onClick="btnLogInClick"
+            android:text="Регистрация"/>
 
         <Button
-            android:id="@+id/btnRegistration"
+            android:id="@+id/btnSignIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="btnRegistrationClick"
-            android:text="Регистрация"/>
+            android:onClick="btnSignInClick"
+            android:text="Вход"/>
     </LinearLayout>
 
 </LinearLayout>

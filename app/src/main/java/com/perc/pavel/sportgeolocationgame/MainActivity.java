@@ -2,16 +2,11 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -22,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -41,11 +36,12 @@ public class MainActivity extends AppCompatActivity {
     }
     
     
-    public void btnLoginClick(View v){
-        
+    public void btnSignInClick(View v){
+        Intent intent = new Intent(this, SignInActivity.class);
+        startActivity(intent);
     }
-    public void btnRegistrationClick(View v){
-        Intent intent = new Intent(this, RegistrationActivity.class);
+    public void btnLogInClick(View v){
+        Intent intent = new Intent(this, LogInActivity.class);
         startActivity(intent);
     }
 }
