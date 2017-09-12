@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.perc.pavel.sportgeolocationgame.MainActivity"
+    tools:context="com.perc.pavel.sportgeolocationgame.RegistrationActivity"
     android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
@@ -27,19 +27,36 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnLogin"
+        <EditText
+            android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="btnLoginClick"
-            android:text="Войти"/>
+            android:ems="10"
+            android:hint="Имя"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/etLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Логин"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Пароль"
+            android:inputType="textPersonName"/>
 
         <Button
             android:id="@+id/btnRegistration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="btnRegistrationClick"
-            android:text="Регистрация"/>
+            android:text="Зарегистрироваться"/>
     </LinearLayout>
 
 </LinearLayout>
