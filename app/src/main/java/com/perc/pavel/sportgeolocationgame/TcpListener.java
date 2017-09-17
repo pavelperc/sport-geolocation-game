@@ -1,6 +1,10 @@
 package com.perc.pavel.sportgeolocationgame;
 
-public interface TcpListener {
+
+/**
+ * Интерфейс для получения ответов от сервера
+ */
+interface TcpListener {
     /**
      * Вызывается при ответе сервера.
      * @param message Ответ сервера.
