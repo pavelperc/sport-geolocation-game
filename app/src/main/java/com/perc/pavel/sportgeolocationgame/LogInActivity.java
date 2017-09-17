@@ -2,11 +2,7 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.util.JsonWriter;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -14,8 +10,9 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-/** Регистрация*/
+/**
+ * Регистрация
+ */
 public class LogInActivity extends AppCompatActivity {
 
     private EditText etLogin;
@@ -33,6 +30,22 @@ public class LogInActivity extends AppCompatActivity {
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
         etName = (EditText) findViewById(R.id.etName);
+        
+        client = new TcpClient();
+        
+        client.startAsync(new TcpListener() {
+            @Override
+            public void onTCPMessageReceived(String message) {
+                Toast.makeText(LogInActivity.this, "Server answer:\n" + message, Toast.LENGTH_SHORT).show();
+                Log.d("my_tag", "Server ansewred: " + message);
+            }
+
+            @Override
+            public void onTCPConnectionStatusChanged(boolean isConnectedNow) {
+                Log.d("my_tag", "Server is connected: " + isConnectedNow);
+            }
+        });
+        
     }
     
 
@@ -50,26 +63,8 @@ public class LogInActivity extends AppCompatActivity {
         send.put("password", password);
         send.put("name", name);
         
-        client = new TcpClient(new TcpClient.OnMessageReceived() {
-            @Override
-            public void messageReceived(String message) {
-                try {
-                    JSONObject received = new JSONObject(message);
-                    
-                    int response = received.getInt("response");
-                    String error = received.getString("error");
-                    
-                    Log.d("my_tag", "response = " + response + "\terror = " + error);
-                    Toast.makeText(LogInActivity.this, "response = " + response + "\nerror = " + error, Toast.LENGTH_SHORT).show();
-                    
-                } catch (JSONException e) {
-                    Log.d("my_tag", "error3:\t" + e);
-                }
-            }
-        });
         
-        client.runAsync();
-        client.sendMessage(send.toString());
+        client.sendMessage(send);
     }
 
     @Override

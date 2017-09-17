@@ -3,6 +3,8 @@ package com.perc.pavel.sportgeolocationgame;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -13,7 +15,13 @@ import java.net.Socket;
 
 /**
  * Created by pavel on 12.09.2017.
- * Пока ничего не работает
+ * 
+ * Класс для работы с сервером через TCP
+ * Пока ничего не работает. (сообщения отправляются, но не принимаются.
+ * Ещё не работает отключение от сервера)
+ * 
+ * В будущем возможно добавление сюда общения через http
+ * 
  * Всё частично взято отсюда:
  * https://stackoverflow.com/questions/38162775/really-simple-tcp-client
  */
@@ -21,174 +29,161 @@ import java.net.Socket;
 class TcpClient {
     private static final String SERVER_IP = "62.109.23.138"; //server IP address
     private static final int SERVER_PORT = 9090;
-    // message to send to the server
-    private String serverMessage;
 
-    // sends message received notifications
-    private OnMessageReceived messageListener = null;
+    private ConnectTask connectTask;
+    private Socket socket;
     
-    // while this is true, the server will continue running
-    private boolean run = false;
     // used to send messages
     private PrintWriter bufferOut;
     // used to read messages from the server
-    private BufferedReader bufferIn;
+    //private BufferedReader bufferIn;
     
-    /**
-     * Constructor of the class. OnMessagedReceived listens for the messages received from server
-     */
-    TcpClient(OnMessageReceived listener) {
-        messageListener = listener;
-    }
 
     /**
-     * Sends the message entered by client to the server
+     * Отправить сообщение на сервер.
      *
-     * @param message text entered by client
+     * @param message JSON объект, отправляемый клиентом.
      */
-    void sendMessage(String message) {
-        if (bufferOut != null && !bufferOut.checkError()) {
-            bufferOut.println(message);
-            bufferOut.flush();
-        }
+    void sendMessage(final JSONObject message) {
+        
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (bufferOut != null && !bufferOut.checkError()) {
+                    bufferOut.println(message.toString());
+                    bufferOut.flush();
+                    Log.d("my_tag", "C: Message sent.");
+                }
+            }
+        }).start();
     }
 
     /**
-     * Close the connection and release the members
+     * Отключиться от сервера
      */
     void stopClient() {
-        
-        run = false;
-        Log.d("my_tag", "in stopClient: set run = false");
-
-        if (bufferOut != null) {
-            bufferOut.flush();
-            bufferOut.close();
+        Log.d("my_tag", "Stopping Client");
+        if (connectTask != null){
+            if (connectTask.cancel(false))
+                connectTask = null;
+            
+            
         }
-        
-        //messageListener = null;
-        bufferIn = null;
-        bufferOut = null;
-        serverMessage = null;
     }
 
-    private void run(OnMessageReceived internalMessageListener) {
 
-        run = true;
-        
-        try {
-            //here you must put your computer's IP address.
-            InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
-
-            //Log.e("TCP Client", "C: Connecting...");
-            Log.d("my_tag", "C: Connecting...");
-
-            //create a socket to make the connection with the server
-            Socket socket = new Socket(serverAddr, SERVER_PORT);
-
-            try {
-                
-                //sends the message to the server
-                bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                
-                //receives the message which the server sends back
-                bufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                int charsRead = 0;
-                char[] buffer = new char[1024]; //choose your buffer size if you need other than 1024
-                
-                //in this while the client listens for the messages sent by the server
-                while (run) {
-                    charsRead = bufferIn.read(buffer);
-                    serverMessage = new String(buffer).substring(0, charsRead);
-                    
-                    if (charsRead > 0 && serverMessage != null && internalMessageListener != null) {
-                        Log.d("my_tag", "S: Received Message: '" + serverMessage + "'");
-                        internalMessageListener.messageReceived(serverMessage);
-                        
-                    }
-                    serverMessage = null;
-                    
-//                    serverMessage = bufferIn.readLine();
-//                    if (serverMessage != null)
-//                        Log.d("my_log", "message: " + serverMessage);
-//                    
-//                    if (serverMessage != null && internalMessageListener != null) {
-//                        //call the method messageReceived from MyActivity class
-//                        Log.d("my_tag", "S: Received Message: '" + serverMessage + "'");
-//                        internalMessageListener.messageReceived(serverMessage);
-//                    }
-
-                }
-                //Log.e("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
-                
-
-            } catch (Exception e) {
-
-                Log.e("TCP", "S: Error", e);
-                Log.d("my_tag", "error1:\t" + e);
-
-            } finally {
-                //the socket must be closed. It is not possible to reconnect to this socket
-                // after it is closed, which means a new socket instance has to be created.
-                socket.close();
-                Log.d("my_tag", "C: disconnected");
-            }
-
-        } catch (Exception e) {
-
-            Log.e("TCP", "C: Error", e);
-            Log.d("my_tag", "error2:\t" + e);
+    /**
+     * Подключиться к серверу.
+     * @param messageListener Интерфейс для получения ответов от сервера и состояния о подключении
+     */
+    void startAsync(TcpListener messageListener) {
+        if (connectTask == null) {
+            connectTask = new ConnectTask(messageListener);
+            connectTask.execute();
         }
+    }
 
-    }
-    
-    void runAsync() {
-        if (!run)
-            new ConnectTask(messageListener).execute("");
-    }
-    
-    private class ConnectTask extends AsyncTask<Object, String, Object> {// <Params, Progress, Result>
-        
-        private final OnMessageReceived messageListener;
-        
-        ConnectTask(OnMessageReceived listener){
+    private class ConnectTask extends AsyncTask<Void, Object, Void> {// <Params, Progress, Result>
+
+        private final TcpListener messageListener;
+
+        ConnectTask(TcpListener listener){
             this.messageListener = listener;
         }
-        
+
         @Override
-        protected Object doInBackground(Object... message) {
+        protected Void doInBackground(Void... message) {
             
-            run(new OnMessageReceived() {
-                @Override
-                //here the messageReceived method is implemented
-                public void messageReceived(String message) {
-                    //this method calls the onProgressUpdate
-                    publishProgress(message);
+            try {
+                //here you must put your computer's IP address.
+                InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
+                
+                //Log.e("TCP Client", "C: Connecting...");
+                Log.d("my_tag", "C: Connecting...");
+                
+                //create a socket to make the connection with the server
+                socket = new Socket(serverAddr, SERVER_PORT);
+
+                try {
+                    //sends the message to the server
+                    bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                    //receives the message which the server sends back
+                    BufferedReader bufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    
+                    publishProgress(null, true);
+                    
+                    
+                    String serverMessage;
+                    //in this while the client listens for the messages sent by the server
+                    while (!isCancelled()) {
+                        Log.d("my_tag", "Before reading from server...");
+                        serverMessage = bufferIn.readLine();
+                        Log.d("my_tag", "Reading from server...");
+                        if (serverMessage != null) {
+                            Log.d("my_tag", "message: " + serverMessage);
+
+                            //call the method messageReceived from MyActivity class
+                            Log.d("my_tag", "S: Received Message: '" + serverMessage + "'");
+                            publishProgress(serverMessage, null);
+                        }
+                        Thread.sleep(500);
+                    }
+
+                    //Log.d("my_tag", "After cycle");
+
+
+                } catch (Exception e) {
+
+                    Log.d("my_tag", "error1:\t" + e);
+
+                } finally {
+                    //the socket must be closed. It is not possible to reconnect to this socket
+                    // after it is closed, which means a new socket instance has to be created.
+                    socket.close();
+                    Log.d("my_tag", "C: disconnected (socket closed in background task)");
                 }
-            });
+
+            } catch (Exception e) {
+                
+                Log.d("my_tag", "error2:\t" + e);
+            }
             
             return null;
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
+        protected void onProgressUpdate(Object... values) { // String message, Boolean connectionStatus
             super.onProgressUpdate(values);
-            //response received from server
-            //Log.d("test", "response " + values[0]);
             
-            messageListener.messageReceived(values[0]);
+            if (values[0] != null)
+                messageListener.onTCPMessageReceived(values[0].toString());
             
-            //process server response here....
+            
+            if (values.length > 1 && values[1] != null){
+                messageListener.onTCPConnectionStatusChanged((boolean) values[1]);
+            }
+        }
 
+
+        @Override
+        protected void onCancelled() {
+            if (bufferOut != null) {
+                bufferOut.flush();
+                bufferOut.close();
+                Log.d("my_tag", "bufferOut closed");
+            }
+            try {
+                socket.close();
+                Log.d("my_tag", "socket closed in onCancelled");
+            } catch (Exception ignored) {}
+            
+            
+            //bufferIn = null;
+            bufferOut = null;
+            
+            messageListener.onTCPConnectionStatusChanged(false);
+            
+            super.onCancelled();
         }
     }
-    
-    
-    //Declare the interface. The method messageReceived(String message) will must be implemented in the MyActivity
-    //class at on asynckTask doInBackground
-    interface OnMessageReceived {
-        void messageReceived(String message);
-    }
-
 }

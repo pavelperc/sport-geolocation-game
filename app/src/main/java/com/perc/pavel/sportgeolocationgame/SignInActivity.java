@@ -8,8 +8,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-
-/** Вход*/
+/**
+ * Вход
+ */
 public class SignInActivity extends AppCompatActivity {
 
     EditText etLogin;
