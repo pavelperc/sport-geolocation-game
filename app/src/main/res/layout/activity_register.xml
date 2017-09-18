@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.perc.pavel.sportgeolocationgame.LogInActivity"
+    tools:context="com.perc.pavel.sportgeolocationgame.RegisterActivity"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/shape_grey_rect_border"
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <EditText
             android:id="@+id/etName"
@@ -38,11 +43,14 @@
             android:inputType="textPassword"/>
 
         <Button
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnRegister"
+            style="@style/Widget.AppCompat.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="btnLogInClick"
-            android:text="Зарегистрироваться"/>
+            android:onClick="btnRegisterClick"
+            android:text="Зарегистрироваться"
+            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+            android:textSize="18sp"/>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

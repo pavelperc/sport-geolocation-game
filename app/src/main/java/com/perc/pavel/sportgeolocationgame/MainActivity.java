@@ -36,12 +36,12 @@ public class MainActivity extends AppCompatActivity {
     }
     
     
-    public void btnSignInClick(View v){
-        Intent intent = new Intent(this, SignInActivity.class);
+    public void btnEnterClick(View v){
+        Intent intent = new Intent(this, EnterActivity.class);
         startActivity(intent);
     }
-    public void btnLogInClick(View v){
-        Intent intent = new Intent(this, LogInActivity.class);
+    public void btnRegisterClick(View v){
+        Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);
     }
 }

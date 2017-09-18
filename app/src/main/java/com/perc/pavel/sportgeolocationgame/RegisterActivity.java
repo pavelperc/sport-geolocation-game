@@ -13,7 +13,7 @@ import org.json.JSONObject;
 /**
  * Регистрация
  */
-public class LogInActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
     private EditText etLogin;
     private EditText etPassword;
@@ -25,7 +25,7 @@ public class LogInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_log_in);
+        setContentView(R.layout.activity_register);
         
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
@@ -36,8 +36,8 @@ public class LogInActivity extends AppCompatActivity {
         client.startAsync(new TcpListener() {
             @Override
             public void onTCPMessageReceived(String message) {
-                Toast.makeText(LogInActivity.this, "Server answer:\n" + message, Toast.LENGTH_SHORT).show();
-                Log.d("my_tag", "Server ansewred: " + message);
+                Toast.makeText(RegisterActivity.this, "Server answer:\n" + message, Toast.LENGTH_SHORT).show();
+                Log.d("my_tag", "Server answered: " + message);
             }
 
             @Override
@@ -49,7 +49,7 @@ public class LogInActivity extends AppCompatActivity {
     }
     
 
-    public void btnLogInClick(View v) throws JSONException {
+    public void btnRegisterClick(View v) throws JSONException {
         String login = etLogin.getText().toString();
         String password = etPassword.getText().toString();
         String name = etName.getText().toString();

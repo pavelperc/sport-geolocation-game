@@ -62,9 +62,9 @@ class TcpClient {
      * Отключиться от сервера
      */
     void stopClient() {
-        Log.d("my_tag", "Stopping Client");
+        Log.d("my_tag", "Before stopping Client");
         if (connectTask != null){
-            if (connectTask.cancel(false))
+            if (connectTask.cancel(true))
                 connectTask = null;
             
             
@@ -112,16 +112,26 @@ class TcpClient {
                     
                     publishProgress(null, true);
                     
+                    Thread.sleep(5000);
                     
-                    String serverMessage;
+                    String serverMessage = null;
                     //in this while the client listens for the messages sent by the server
                     while (!isCancelled()) {
                         Log.d("my_tag", "Before reading from server...");
-                        serverMessage = bufferIn.readLine();
-                        Log.d("my_tag", "Reading from server...");
+                        
+                        
+                        try {
+                            serverMessage = bufferIn.readLine();
+                            Log.d("my_tag", "Reading from server...");
+                        } catch (Exception e){
+                            Log.d("my_tag", "error in readLine: " + e);
+                        }
+                        
+                        
+                        
                         if (serverMessage != null) {
                             Log.d("my_tag", "message: " + serverMessage);
-
+                            
                             //call the method messageReceived from MyActivity class
                             Log.d("my_tag", "S: Received Message: '" + serverMessage + "'");
                             publishProgress(serverMessage, null);
