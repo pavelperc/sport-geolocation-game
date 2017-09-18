@@ -32,12 +32,16 @@ public class EnterActivity extends AppCompatActivity {
         
         Toast.makeText(this, "login = " + login + "\npassword = " + password, Toast.LENGTH_SHORT).show();
         Log.d("my_tag", "login = " + login + "\tpassword = " + password);
-
+        
+        startActivity(new Intent(this, MapsActivity.class));
+        
     }
     public void btnRegisterClick(View v) {
         Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);
     }
     
-    
+    public void btnVkRegisterClick(View v) {
+        
+    }
 }
