@@ -3,6 +3,7 @@ package com.perc.pavel.sportgeolocationgame;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -166,9 +167,11 @@ class TcpClient {
             super.onProgressUpdate(values);
             
             if (values[0] != null)
-                messageListener.onTCPMessageReceived(values[0].toString());
-            
-            
+                try {
+                    messageListener.onTCPMessageReceived(new JSONObject(values[0].toString()));
+                } catch (JSONException ignored) {}
+
+
             if (values.length > 1 && values[1] != null){
                 messageListener.onTCPConnectionStatusChanged((boolean) values[1]);
             }

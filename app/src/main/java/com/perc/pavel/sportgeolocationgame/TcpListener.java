@@ -1,15 +1,17 @@
 package com.perc.pavel.sportgeolocationgame;
 
 
+import org.json.JSONObject;
+
 /**
- * Интерфейс для получения ответов от сервера
+ * Интерфейс для получения ответов от tcp сервера
  */
 interface TcpListener {
     /**
      * Вызывается при ответе сервера.
      * @param message Ответ сервера.
      */
-	void onTCPMessageReceived(String message);
+	void onTCPMessageReceived(JSONObject message);
 
     /**
      * Вызывается при подключении или отключении от сервера.
