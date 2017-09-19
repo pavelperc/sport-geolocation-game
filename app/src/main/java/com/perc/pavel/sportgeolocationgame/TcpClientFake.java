@@ -105,7 +105,7 @@ class TcpClientFake{
                 final JSONObject answer = simulateServerAnswer(message);
 
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 } catch (InterruptedException ignored) {}
 
                 activity.runOnUiThread(new Runnable() {

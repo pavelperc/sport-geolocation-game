@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -18,6 +19,7 @@ public class EnterActivity extends AppCompatActivity {
 
     EditText etLogin;
     EditText etPassword;
+    ProgressBar pbLoading;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +28,7 @@ public class EnterActivity extends AppCompatActivity {
 
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
     }
     
     
@@ -45,9 +48,11 @@ public class EnterActivity extends AppCompatActivity {
         } catch (JSONException ignored){}
 
 
+        pbLoading.setVisibility(View.VISIBLE);
         new TcpClientFake().httpRequest(send, this, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
+                pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.getInt("response") > 0) {
                         Toast.makeText(EnterActivity.this, "Вход успешен.", Toast.LENGTH_SHORT).show();

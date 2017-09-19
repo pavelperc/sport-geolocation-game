@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -21,6 +22,8 @@ public class RegisterActivity extends AppCompatActivity {
     
     private TcpClientFake client;
     
+    private ProgressBar pbLoading;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
         etName = (EditText) findViewById(R.id.etName);
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         
         client = new TcpClientFake();
         
@@ -66,9 +70,11 @@ public class RegisterActivity extends AppCompatActivity {
         } catch (JSONException ignored){}
         
         
+        pbLoading.setVisibility(View.VISIBLE);
         client.httpRequest(send, this, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
+                pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.getInt("response") > 0) {
                         Toast.makeText(RegisterActivity.this, "Регистрация успешна.", Toast.LENGTH_SHORT).show();
