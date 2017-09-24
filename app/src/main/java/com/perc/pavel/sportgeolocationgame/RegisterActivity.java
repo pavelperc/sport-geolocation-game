@@ -71,7 +71,7 @@ public class RegisterActivity extends AppCompatActivity {
         
         
         pbLoading.setVisibility(View.VISIBLE);
-        client.httpRequest(send, this, new HttpListener() {
+        client.httpRequest(send, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
                 pbLoading.setVisibility(View.GONE);

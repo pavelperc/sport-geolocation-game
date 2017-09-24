@@ -115,7 +115,7 @@ public class EnterActivity extends AppCompatActivity {
 
 
         pbLoading.setVisibility(View.VISIBLE);
-        new TcpClientFake().httpRequest(send, this, new HttpListener() {
+        new TcpClientFake().httpRequest(send, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
                 pbLoading.setVisibility(View.GONE);

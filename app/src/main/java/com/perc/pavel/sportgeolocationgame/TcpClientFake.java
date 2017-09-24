@@ -1,6 +1,8 @@
 package com.perc.pavel.sportgeolocationgame;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,13 +11,16 @@ import org.json.JSONObject;
  * Created by pavel on 19.09.2017.
  */
 
+/**
+ * Эмулятор сервера в режимах TCP и HTTP.
+ */
 class TcpClientFake{
     
     private TcpListener tcpListener = null;
 
     /**
      * Запустить Сервер в tcp режиме.
-     * @param messageListener Интерфейс общения с сервером.
+     * @param messageListener Интерфейс общения с сервером. (Вызывается в основном потоке через Handler.post)
      */
     void startAsync(TcpListener messageListener) {
         tcpListener = messageListener;
@@ -25,10 +30,9 @@ class TcpClientFake{
     /**
      * Отправить сообщение серверу в режиме tcp. До этого нужно вызвать startAsync.
      * @param message Сообщение серверу.
-     * @param activity Активити, в поток которой будет отправляться результат.
-     *                 (В дальнейшем можно заменить на объект Handler.)
      */
-    void sendMessage(final JSONObject message, final Activity activity) {
+    void sendMessage(final JSONObject message) {
+        final Handler handler = new Handler();
         if (tcpListener != null){
             new Thread(new Runnable() {
                 @Override
@@ -37,16 +41,22 @@ class TcpClientFake{
                     final JSONObject answer = simulateServerAnswer(message);
 
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
                     } catch (InterruptedException ignored) {}
-                    
-                    
-                    activity.runOnUiThread(new Runnable() {
+
+                    boolean result = handler.post(new Runnable() {
                         @Override
                         public void run() {
                             tcpListener.onTCPMessageReceived(answer);
                         }
                     });
+                    
+//                    activity.runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            tcpListener.onTCPMessageReceived(answer);
+//                        }
+//                    });
                 }
             }).start();
         }
@@ -94,10 +104,12 @@ class TcpClientFake{
     /**
      * Запрос сервера в режиме http.
      * @param message Сообщение серверу.
-     * @param onResult Интерфейс, в который сервер отправляет ответ. onTCPConnectionStatusChanged не заполнять.
-     * @param activity Активити, в поток которой будет отправляться результат.
+     * @param onResult Интерфейс, в который сервер отправляет ответ. (Вызывается в основном потоке через Handler.post)
      */
-    void httpRequest(final JSONObject message, final Activity activity, final HttpListener onResult){
+    void httpRequest(final JSONObject message, final HttpListener onResult){
+        final Handler handler = new Handler();
+        
+        
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -107,13 +119,22 @@ class TcpClientFake{
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) {}
-
-                activity.runOnUiThread(new Runnable() {
+                
+                
+                boolean result = handler.post(new Runnable() {
                     @Override
                     public void run() {
                         onResult.onMessageReceived(answer);
                     }
                 });
+
+//                Log.d("my_tag", "handler posted = " + result);
+//                activity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        onResult.onMessageReceived(answer);
+//                    }
+//                });
             }
         }).start();
     }
