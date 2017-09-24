@@ -6,6 +6,7 @@ import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -74,10 +75,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
         } catch (SecurityException ignored){};
+
+        Log.d("my_tag", "location update started");
+
     }
     
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        Log.d("my_tag", "location update stopped");
     }
     
     
@@ -121,7 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 public void onSuccess(Location location) {
                     //Toast.makeText(MapsActivity.this, "Moving camera", Toast.LENGTH_SHORT).show();
                     LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 18.0f));// 2,0 - 21.0
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 18.0f));// 2,0 - 21.0, 2.0 - the whole world
                 }
             });
             

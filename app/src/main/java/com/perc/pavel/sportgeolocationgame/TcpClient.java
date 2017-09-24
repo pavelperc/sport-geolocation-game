@@ -53,7 +53,7 @@ class TcpClient {
                 if (bufferOut != null && !bufferOut.checkError()) {
                     bufferOut.println(message.toString());
                     bufferOut.flush();
-                    Log.d("my_tag", "C: Message sent.");
+                    Log.d("serv_tag", "C: Message sent.");
                 }
             }
         }).start();
@@ -63,7 +63,7 @@ class TcpClient {
      * Отключиться от сервера
      */
     void stopClient() {
-        Log.d("my_tag", "Before stopping Client");
+        Log.d("serv_tag", "Before stopping Client");
         if (connectTask != null){
             if (connectTask.cancel(true))
                 connectTask = null;
@@ -100,7 +100,7 @@ class TcpClient {
                 InetAddress serverAddr = InetAddress.getByName(SERVER_IP);
                 
                 //Log.e("TCP Client", "C: Connecting...");
-                Log.d("my_tag", "C: Connecting...");
+                Log.d("serv_tag", "C: Connecting...");
                 
                 //create a socket to make the connection with the server
                 socket = new Socket(serverAddr, SERVER_PORT);
@@ -118,45 +118,45 @@ class TcpClient {
                     String serverMessage = null;
                     //in this while the client listens for the messages sent by the server
                     while (!isCancelled()) {
-                        Log.d("my_tag", "Before reading from server...");
+                        Log.d("serv_tag", "Before reading from server...");
                         
                         
                         try {
                             serverMessage = bufferIn.readLine();
-                            Log.d("my_tag", "Reading from server...");
+                            Log.d("serv_tag", "Reading from server...");
                         } catch (Exception e){
-                            Log.d("my_tag", "error in readLine: " + e);
+                            Log.d("serv_tag", "error in readLine: " + e);
                         }
                         
                         
                         
                         if (serverMessage != null) {
-                            Log.d("my_tag", "message: " + serverMessage);
+                            Log.d("serv_tag", "message: " + serverMessage);
                             
                             //call the method messageReceived from MyActivity class
-                            Log.d("my_tag", "S: Received Message: '" + serverMessage + "'");
+                            Log.d("serv_tag", "S: Received Message: '" + serverMessage + "'");
                             publishProgress(serverMessage, null);
                         }
                         Thread.sleep(500);
                     }
 
-                    //Log.d("my_tag", "After cycle");
+                    //Log.d("serv_tag", "After cycle");
 
 
                 } catch (Exception e) {
 
-                    Log.d("my_tag", "error1:\t" + e);
+                    Log.d("serv_tag", "error1:\t" + e);
 
                 } finally {
                     //the socket must be closed. It is not possible to reconnect to this socket
                     // after it is closed, which means a new socket instance has to be created.
                     socket.close();
-                    Log.d("my_tag", "C: disconnected (socket closed in background task)");
+                    Log.d("serv_tag", "C: disconnected (socket closed in background task)");
                 }
 
             } catch (Exception e) {
                 
-                Log.d("my_tag", "error2:\t" + e);
+                Log.d("serv_tag", "error2:\t" + e);
             }
             
             return null;
@@ -183,11 +183,11 @@ class TcpClient {
             if (bufferOut != null) {
                 bufferOut.flush();
                 bufferOut.close();
-                Log.d("my_tag", "bufferOut closed");
+                Log.d("serv_tag", "bufferOut closed");
             }
             try {
                 socket.close();
-                Log.d("my_tag", "socket closed in onCancelled");
+                Log.d("serv_tag", "socket closed in onCancelled");
             } catch (Exception ignored) {}
             
             
