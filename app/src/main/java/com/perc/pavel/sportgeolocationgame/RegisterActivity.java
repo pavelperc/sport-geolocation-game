@@ -1,5 +1,7 @@
 package com.perc.pavel.sportgeolocationgame;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,9 +56,14 @@ public class RegisterActivity extends AppCompatActivity {
     
 
     public void btnRegisterClick(View v) {
-        String login = etLogin.getText().toString();
-        String password = etPassword.getText().toString();
-        String name = etName.getText().toString();
+        final String login = etLogin.getText().toString();
+        final String password = etPassword.getText().toString();
+        final String name = etName.getText().toString();
+
+        if (login.equals("") || password.equals("") || name.equals("")) {
+            Toast.makeText(this, "Все поля должны быть заполнены.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
         //Toast.makeText(this, "name = " + name + "\nlogin = " + login + "\npassword = " + password , Toast.LENGTH_SHORT).show();
         //Log.d("my_tag",  "name = " + name + "\tlogin = " + login + "\tpassword = " + password);
@@ -77,7 +84,28 @@ public class RegisterActivity extends AppCompatActivity {
                 pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.getInt("response") > 0) {
+                        // Сохранение последних данных НЕ РАБОТАЕТ!!!!!!!
+                        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putString("login", login);
+                        editor.putString("password", password);
+                        editor.apply();
+//                        //boolean res = editor.commit();// ASYNC
+//                        
+//                        pref = getPreferences(MODE_PRIVATE);
+//                        
+//                        //Toast.makeText(RegisterActivity.this, "saved = " + res, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(RegisterActivity.this, "saved1 login = " + pref.getString("login", "-"), Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent();
+                        intent.putExtra("login", login);
+                        intent.putExtra("password", password);
+                        intent.putExtra("name", name);
+                        
+                        
+                        setResult(RESULT_OK, intent);
                         Toast.makeText(RegisterActivity.this, "Регистрация успешна.", Toast.LENGTH_SHORT).show();
+                        RegisterActivity.this.finish();
                     } else {
                         Toast.makeText(RegisterActivity.this, "Ошибка регистрации.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
                     }

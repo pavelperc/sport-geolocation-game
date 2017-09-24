@@ -1,18 +1,16 @@
 package com.perc.pavel.sportgeolocationgame;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -24,11 +22,14 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 /**
  * Вход
  */
 public class EnterActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST = 1;
+    private static final int REGISTRATION_REQUEST = 2;
     EditText etLogin;
     EditText etPassword;
     ProgressBar pbLoading;
@@ -41,10 +42,19 @@ public class EnterActivity extends AppCompatActivity {
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
-
-        // запрашиваем разрешение на местоположение
+        
         askPermissions();
         checkGoogleServices();
+        restoreLastLoginData();
+    }
+
+    /**
+     * Если сохранены последние данные входа - они восстанавливаются.
+     */
+    private void restoreLastLoginData() {
+        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        etLogin.setText(pref.getString("login", ""));
+        etPassword.setText(pref.getString("password", ""));
     }
 
     /**
@@ -99,8 +109,14 @@ public class EnterActivity extends AppCompatActivity {
     }
 
     public void btnEnterClick(View v) {
-        String login = etLogin.getText().toString();
-        String password = etPassword.getText().toString();
+        final String login = etLogin.getText().toString();
+        final String password = etPassword.getText().toString();
+        
+        if (login.equals("") || password.equals("")) {
+            Toast.makeText(this, "Все поля должны быть заполнены.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         
 //        Toast.makeText(this, "login = " + login + "\npassword = " + password, Toast.LENGTH_SHORT).show();
 //        Log.d("my_tag", "login = " + login + "\tpassword = " + password);
@@ -121,7 +137,15 @@ public class EnterActivity extends AppCompatActivity {
                 pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.getInt("response") > 0) {
-                        Toast.makeText(EnterActivity.this, "Вход успешен.", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(EnterActivity.this, "Вход успешен.", Toast.LENGTH_SHORT).show();
+                        
+                        // Сохранение последних данных
+                        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putString("login", login);
+                        editor.putString("password", password);
+                        editor.apply();
+                                                
                         startActivity(new Intent(EnterActivity.this, MapsActivity.class));
                     } else {
                         Toast.makeText(EnterActivity.this, "Ошибка входа.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
@@ -130,13 +154,30 @@ public class EnterActivity extends AppCompatActivity {
             }
         });
     }
-    
-    
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REGISTRATION_REQUEST && resultCode == RESULT_OK) {
+
+            // Сохранение последних данных
+            // В RegisterActivity ПОЧЕМУ-ТО НЕ РАБОТАЕТ
+            SharedPreferences pref = getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString("login", data.getStringExtra("login"));
+            editor.putString("password", data.getStringExtra("password"));
+            editor.apply();
+            
+            restoreLastLoginData();
+        }
+    }
+
     public void btnRegisterClick(View v) {
-        startActivity(new Intent(this, RegisterActivity.class));
+        startActivityForResult(new Intent(this, RegisterActivity.class), REGISTRATION_REQUEST);
     }
     
     public void btnVkRegisterClick(View v) {
         
     }
+    
 }
