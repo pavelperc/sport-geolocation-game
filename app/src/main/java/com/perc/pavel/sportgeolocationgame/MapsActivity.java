@@ -1,140 +1,208 @@
 package com.perc.pavel.sportgeolocationgame;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
+import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
+import android.animation.ValueAnimator;
 import android.location.Location;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationClient;
-    
-    //private Location myLastLocation = null;
-    
-    private LocationSource.OnLocationChangedListener locationChangeListener = null;
-    
-    
+    private MapView mapView;
+    private MapboxMap mapboxMap;
+
+    private Marker locationMarker;
+
+    private FusedLocationProviderClient fusedLocationClient;
+
+    private Location myLastLocation = null;
+
+    /**
+     * Регулярное обновление местоположения.
+     */
     private final LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location location = locationResult.getLastLocation();
-            // Запускаем locationChangeListener
-            if (locationChangeListener != null) {
-                locationChangeListener.onLocationChanged(location);
+
+            Log.d("my_tag", "got location result.");
+
+
+            if (myLastLocation == null) {
+                myLastLocation = location;
+                onFirstLocationUpdate();
+            } else {
+                myLastLocation = location;
+                // Анимация камеры
+                mapboxMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
+                
+                // Анимация маркера
+                ValueAnimator markerAnimator = ObjectAnimator.ofObject(locationMarker, "position",
+                        new LatLngEvaluator(), locationMarker.getPosition(), locToLL(myLastLocation));
+                markerAnimator.setDuration(500);
+                markerAnimator.start();
             }
-            
-            
-        };
+        }
+
+        ;
     };
-    
-    
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, getString(R.string.mapbox_key));
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        mapView = (MapView) findViewById(R.id.mapView);
+        //mapView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (int) (mapView.getHeight() * 2)));
         
         
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(MapboxMap mapboxMap) {
+        this.mapboxMap = mapboxMap;
         startLocationUpdates();
+    }
+
+
+    private void startLocationUpdates() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(3000);
+        mLocationRequest.setFastestInterval(3000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        try {
+            fusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+        } catch (SecurityException ignored) {
+        }
+        ;
+
+        Log.d("my_tag", "location update started");
+
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(mLocationCallback);
+        Log.d("my_tag", "location update stopped");
+    }
+
+    private void onFirstLocationUpdate() {
+        // Create an Icon object for the marker to use
+        Icon icon = IconFactory.getInstance(MapsActivity.this).fromResource(R.drawable.blue_man);
+        
+
+        locationMarker = mapboxMap.addMarker(new MarkerOptions()
+                .position(locToLL(myLastLocation))
+                .icon(icon));
+        
+        mapboxMap.moveCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)));
+
+        CameraPosition position = new CameraPosition.Builder()
+                .tilt(60)
+                .target(locToLL(myLastLocation))
+                .zoom(16)
+                .build();
+        
+        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 2500);
+
+    }
+
+    /**
+     * Преобразовать Location в LatLng
+     *
+     * @param location объект Location
+     * @return объект LatLng
+     */
+    private LatLng locToLL(Location location) {
+        return new LatLng(location.getLatitude(), location.getLongitude());
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mapView.onDestroy();
         stopLocationUpdates();
     }
 
-    private void startLocationUpdates() {
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(3000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        try {
-            mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
-        } catch (SecurityException ignored){};
-
-        Log.d("my_tag", "location update started");
-
-    }
-    
-    private void stopLocationUpdates() {
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-        Log.d("my_tag", "location update stopped");
-    }
-    
-    
-    
-    
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        
-        mMap.setLocationSource(new LocationSource() {
-            @Override
-            public void activate(OnLocationChangedListener onLocationChangedListener) {
-//                try {
-//                    onLocationChangedListener.onLocationChanged(mFusedLocationClient.getLastLocation().getResult());
-//                } catch (SecurityException ignored){}
-                
-                locationChangeListener = onLocationChangedListener;
-            }
-            
-            @Override
-            public void deactivate() {
-                locationChangeListener = null;
-            }
-        });
-        
-        
-        try {
-            mMap.setMyLocationEnabled(true);
-
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    //Toast.makeText(MapsActivity.this, "Moving camera", Toast.LENGTH_SHORT).show();
-                    LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 18.0f));// 2,0 - 21.0, 2.0 - the whole world
-                }
-            });
-            
-        } catch (SecurityException ignored){}
-        // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
     }
+
+    /**
+     * Настраивает анимацию маркера.
+     */
+    private static class LatLngEvaluator implements TypeEvaluator<LatLng> {
+        // Method is used to interpolate the marker animation.
+
+        private LatLng latLng = new LatLng();
+
+        @Override
+        public LatLng evaluate(float fraction, LatLng startValue, LatLng endValue) {
+            latLng.setLatitude(startValue.getLatitude()
+                    + ((endValue.getLatitude() - startValue.getLatitude()) * fraction));
+            latLng.setLongitude(startValue.getLongitude()
+                    + ((endValue.getLongitude() - startValue.getLongitude()) * fraction));
+            return latLng;
+        }
+    }
+    
 }
