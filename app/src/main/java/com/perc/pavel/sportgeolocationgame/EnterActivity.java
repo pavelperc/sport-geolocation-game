@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -146,7 +147,7 @@ public class EnterActivity extends AppCompatActivity {
                         editor.putString("password", password);
                         editor.apply();
                                                 
-                        startActivity(new Intent(EnterActivity.this, MapsActivity.class));
+                        startActivity(new Intent(EnterActivity.this, GoogleMapsActivity.class));
                     } else {
                         Toast.makeText(EnterActivity.this, "Ошибка входа.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
                     }
@@ -171,13 +172,16 @@ public class EnterActivity extends AppCompatActivity {
             restoreLastLoginData();
         }
     }
-
+    
+    public void btnEnter2Click(View v) {
+        startActivity(new Intent(EnterActivity.this, MapsActivity.class));
+    }
+    
     public void btnRegisterClick(View v) {
         startActivityForResult(new Intent(this, RegisterActivity.class), REGISTRATION_REQUEST);
     }
     
     public void btnVkRegisterClick(View v) {
-        
     }
     
 }

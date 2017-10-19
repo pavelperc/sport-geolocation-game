@@ -8,6 +8,8 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -17,31 +19,27 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.BaseMarkerOptions;
-import com.mapbox.mapboxsdk.annotations.Icon;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.MarkerView;
-import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyCallback {
     private Random rnd = new Random();
-    private MapView mapView;
-    private MapboxMap mapboxMap;
-    
-    private MarkerView locationMarker;
-    
+    private GoogleMap googleMap;
+
+    private Marker locationMarker;
+
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -49,7 +47,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Последнее местоположение.
      */
     private Location myLastLocation = null;
-    
+
     /**
      * Регулярное обновление местоположения.
      */
@@ -57,10 +55,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location location = locationResult.getLastLocation();
-
+            
             Log.d("my_tag", "got location result, bearing = " + location.getBearing()
                     + "accuracy = " + location.getAccuracy());
-            
+
 
             if (myLastLocation == null) {
                 myLastLocation = location;
@@ -72,12 +70,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 myLastLocation.setBearing(newBearing);
                 
                 // Поворот маркера
-                locationMarker.setRotation(location.getBearing() - (float)mapboxMap.getCameraPosition().bearing);
-                
+                locationMarker.setRotation(location.getBearing());
+
 
 //                // Анимация камеры
-//                mapboxMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
-                
+//                googleMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
+
                 // Анимация маркера
                 ValueAnimator markerAnimator = ObjectAnimator.ofObject(locationMarker, "position",
                         new LatLngEvaluator(), locationMarker.getPosition(), locToLL(myLastLocation));
@@ -88,42 +86,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         ;
     };
-
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Mapbox.getInstance(this, getString(R.string.mapbox_key));
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_google_maps);
+        
+        
+        
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        
         
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        mapView = (MapView) findViewById(R.id.mapView);
-                
-        
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
     }
-
+    
     @Override
-    public void onMapReady(final MapboxMap mapboxMap) {
-        this.mapboxMap = mapboxMap;
-        
-        
+    public void onMapReady(final GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        //googleMap.setBuildingsEnabled(false);
         startLocationUpdates();
-        mapboxMap.setOnCameraMoveListener(new MapboxMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                CameraPosition position = mapboxMap.getCameraPosition();
-                // Поворот маркера при движении камеры
-                if (locationMarker != null) {
-                    float newRotation = myLastLocation.getBearing() - (float) position.bearing;
-                    // Если направление не менялось - ничего не обновляем
-                    if (locationMarker.getRotation() != newRotation)
-                        locationMarker.setRotation(newRotation);
-                }
-            }
-        });
     }
 
 
@@ -148,41 +132,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void onFirstLocationUpdate() {
-//        Icon icon = IconFactory.getInstance(MapsActivity.this).fromResource(R.drawable.blue_man);
-//        locationMarker = mapboxMap.addMarker(new MarkerOptions()
-//                .position(locToLL(myLastLocation))
-//                .icon(icon));
-
+        
+        
         // Создаём маркер игрока
-        Icon icon = IconFactory.getInstance(MapsActivity.this).fromResource(R.drawable.blue_arrow);
-        locationMarker = mapboxMap.addMarker(new MarkerViewOptions()
+        locationMarker = googleMap.addMarker(new MarkerOptions()
                 .position(locToLL(myLastLocation))
                 .anchor(0.5f, 0.5f)
-                .icon(icon)
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.blue_arrow))
                 .flat(true));
-        locationMarker.setRotation(myLastLocation.getBearing());
+        locationMarker.setTag("player-location");
         
-        mapboxMap.moveCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)));
-        
-        Icon flagIcon = IconFactory.getInstance(MapsActivity.this).fromResource(R.drawable.red_flag);
         // Создаём маркеры флажков
         double lat = myLastLocation.getLatitude();
         double lng = myLastLocation.getLongitude();
         double delta = 0.01;// В градусах
+
+        BitmapDescriptor flagIcon = BitmapDescriptorFactory.fromResource(R.drawable.purple_flag);
+        
         ArrayList<MarkerOptions> flags = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
             LatLng ll = new LatLng(lat + rnd.nextDouble() * delta - delta / 2, lng + rnd.nextDouble() * delta - delta / 2);
-            flags.add(new MarkerOptions().position(ll).icon(flagIcon));
-            
+            googleMap.addMarker(new MarkerOptions()
+                    .position(ll)
+                    .anchor(0.1f, 1f)
+                    .icon(flagIcon)).setTag(i);
         }
         
-        mapboxMap.addMarkers(flags);
         
-        mapboxMap.setOnMarkerClickListener(new MapboxMap.OnMarkerClickListener() {
+        
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
-                double dist = marker.getPosition().distanceTo(locToLL(myLastLocation));
-                Toast.makeText(MapsActivity.this, marker.getId() + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
+                if (marker.getTag() == "player-location")
+                    return true;
+                
+                double dist = myLastLocation.distanceTo(llToLoc(marker.getPosition()));
+                Toast.makeText(GoogleMapsActivity.this, marker.getTag() + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
                 
                 if (dist < 200) {
                     marker.remove();
@@ -190,16 +175,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return true;
             }
         });
+
+
+        // Мнгновенное перемещение камеры в центр локации с заданным масштабом
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locToLL(myLastLocation), 14));
         
         // Анимация камеры
         CameraPosition position = new CameraPosition.Builder()
                 .tilt(60)// Наклон
                 .target(locToLL(myLastLocation))
-                .zoom(16)
+                .zoom(18)
                 .bearing(myLastLocation.getBearing())// Направление
                 .build();
         
-        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 2500);
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 2500, null);
     }
 
     /**
@@ -212,93 +201,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return new LatLng(location.getLatitude(), location.getLongitude());
     }
 
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mapView.onStart();
+    private Location llToLoc(LatLng latLng) {
+        Location res = new Location("");
+        res.setLatitude(latLng.latitude);
+        res.setLongitude(latLng.longitude);
+        return res;
     }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mapView.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mapView.onPause();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mapView.onStop();
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapView.onLowMemory();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mapView.onDestroy();
-        stopLocationUpdates();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
-    }
-
     
     void btnMyLocationClick(View v) {
 //        // Анимация камеры
 //        if (myLastLocation != null)
-//            mapboxMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
+//            googleMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
 
         if (myLastLocation != null) {
             // Анимация камеры
             CameraPosition position = new CameraPosition.Builder()
-                    .tilt(60)// Наклон
+                    .tilt(googleMap.getCameraPosition().tilt)// Наклон
                     .target(locToLL(myLastLocation))
-                    .zoom(16)
+                    .zoom(18)
                     .bearing(myLastLocation.getBearing())// Направление
                     .build();
 
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500);
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500, null);
         }
     }
-    
+
     void btnZoomInClick(View v) {
-        mapboxMap.animateCamera(CameraUpdateFactory.zoomIn());
+        googleMap.animateCamera(CameraUpdateFactory.zoomIn());
     }
 
     void btnZoomOutClick(View v) {
-        mapboxMap.animateCamera(CameraUpdateFactory.zoomOut());
+        googleMap.animateCamera(CameraUpdateFactory.zoomOut());
     }
-    
-    
+
+
     /**
      * Настраивает анимацию маркера.
      */
     private static class LatLngEvaluator implements TypeEvaluator<LatLng> {
         // Method is used to interpolate the marker animation.
-
-        private LatLng latLng = new LatLng();
-
+        
         @Override
         public LatLng evaluate(float fraction, LatLng startValue, LatLng endValue) {
-            latLng.setLatitude(startValue.getLatitude()
-                    + ((endValue.getLatitude() - startValue.getLatitude()) * fraction));
-            latLng.setLongitude(startValue.getLongitude()
-                    + ((endValue.getLongitude() - startValue.getLongitude()) * fraction));
-            return latLng;
+            double latitude = (startValue.latitude
+                    + ((endValue.latitude - startValue.latitude) * fraction));
+            double longitude = startValue.longitude
+                    + ((endValue.longitude - startValue.longitude) * fraction);
+            
+            return new LatLng(latitude, longitude);
         }
     }
 }

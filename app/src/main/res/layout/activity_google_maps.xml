@@ -5,24 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.mapbox.mapboxsdk.maps.MapView
-        android:id="@+id/mapView"
+
+    <fragment
+        android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible"
-        mapbox:mapbox_cameraTargetLat="40.73581"
-        mapbox:mapbox_cameraTargetLng="-73.99155"
-
-        mapbox:mapbox_cameraZoom="12"
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
-        mapbox:mapbox_uiDoubleTapGestures="true"
-        mapbox:mapbox_uiRotateGestures="true"
-        mapbox:mapbox_uiScrollGestures="true"
-        mapbox:mapbox_uiTiltGestures="true"
-        mapbox:mapbox_uiZoomGestures="true">
-
-    </com.mapbox.mapboxsdk.maps.MapView>
-
+        class="com.google.android.gms.maps.SupportMapFragment" 
+        />
+    
     <Button
         android:id="@+id/btnMyLocation"
         style="@style/Widget.AppCompat.Button.Small"

@@ -48,6 +48,11 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps">
         </activity>
+        <activity
+            android:name=".GoogleMapsActivity"
+            android:label="@string/title_activity_google_maps"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
