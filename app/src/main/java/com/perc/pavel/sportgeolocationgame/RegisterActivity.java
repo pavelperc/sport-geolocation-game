@@ -21,9 +21,6 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etLogin;
     private EditText etPassword;
     private EditText etName;
-    
-    private TcpClientFake client;
-    
     private ProgressBar pbLoading;
     
 
@@ -37,8 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
         etName = (EditText) findViewById(R.id.etName);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         
-        client = new TcpClientFake();
-        
+                
 //        client.startAsync(new TcpListener() {
 //            @Override
 //            public void onMessageReceived(String message) {
@@ -78,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity {
         
         
         pbLoading.setVisibility(View.VISIBLE);
-        client.httpRequest(send, new HttpListener() {
+        TcpClientFake.getInstance().httpRequest(send, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
                 pbLoading.setVisibility(View.GONE);

@@ -132,7 +132,7 @@ public class EnterActivity extends AppCompatActivity {
 
 
         pbLoading.setVisibility(View.VISIBLE);
-        new TcpClientFake().httpRequest(send, new HttpListener() {
+        TcpClientFake.getInstance().httpRequest(send, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
                 pbLoading.setVisibility(View.GONE);
@@ -173,9 +173,6 @@ public class EnterActivity extends AppCompatActivity {
         }
     }
     
-    public void btnEnter2Click(View v) {
-        startActivity(new Intent(EnterActivity.this, MapsActivity.class));
-    }
     
     public void btnRegisterClick(View v) {
         startActivityForResult(new Intent(this, RegisterActivity.class), REGISTRATION_REQUEST);

@@ -1,11 +1,16 @@
 package com.perc.pavel.sportgeolocationgame;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Handler;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by pavel on 19.09.2017.
@@ -14,7 +19,34 @@ import org.json.JSONObject;
 /**
  * Эмулятор сервера в режимах TCP и HTTP.
  */
-class TcpClientFake{
+class TcpClientFake {
+    
+    static class Flag {
+        double lat;
+        double lng;
+        
+        public Flag(double lat, double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
+    }
+    
+    private static TcpClientFake instance;
+    
+    static TcpClientFake getInstance() {
+        if (instance == null)
+            instance = new TcpClientFake();
+        return instance;
+    }
+    
+    ArrayList<Player> players = new ArrayList<>();
+    //ArrayList<Flag> flags;
+    
+    
+    
+    final int OTHER_PLAYERS_COUNT = 4;
+    Random rnd = new Random();
+    
     
     private TcpListener tcpListener = null;
 
@@ -71,6 +103,9 @@ class TcpClientFake{
         
         try {
             JSONObject answer = new JSONObject();
+            // 1 градус = 111km 
+            // 10 метров = 0.00009 градусов
+            double llDelta = 0.00018;
             
             switch (message.getString("type")) {
                 case "register":
@@ -78,6 +113,36 @@ class TcpClientFake{
                     break;
                 case "authorization":
                     answer.put("response", 1);
+                    break;
+                case "startGame":
+                    double lat = message.getDouble("lat");
+                    double lng = message.getDouble("lng");
+                    
+                    
+                    players.clear();
+                    for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
+                        Player player = new Player(
+                                "player_" + i,
+                                lat + (rnd.nextDouble() - 0.5) * llDelta,
+                                lng + (rnd.nextDouble() - 0.5) * llDelta,
+                                (i % 2 == 0 ? Color.RED : Color.GREEN));
+                                
+                        players.add(player);
+                    }
+                    answer.put("response", 1);
+                    break;
+                case "getPlayerLocations":
+                    
+                    JSONArray jPlayers = new JSONArray();
+                    for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
+                        players.get(i).lat += (rnd.nextDouble() - (double)i/OTHER_PLAYERS_COUNT) * llDelta;
+                        players.get(i).lng += (rnd.nextDouble() - (double)i/OTHER_PLAYERS_COUNT) * llDelta;
+                        
+                        jPlayers.put(players.get(i).getJson());
+                    }
+                    
+                    answer.put("response", 1);
+                    answer.put("players", jPlayers);
                     break;
                 default:
                     answer.put("response", 0);
@@ -117,7 +182,7 @@ class TcpClientFake{
                 final JSONObject answer = simulateServerAnswer(message);
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException ignored) {}
                 
                 

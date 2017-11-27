@@ -39,16 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="btnEnterClick"
-            android:text="Войти (gmaps)"
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-            android:textColor="@android:color/black"/>
-
-        <Button
-            android:id="@+id/btnEnter2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="btnEnter2Click"
-            android:text="Войти (mapbox)"
+            android:text="Войти"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="@android:color/black"/>
 
