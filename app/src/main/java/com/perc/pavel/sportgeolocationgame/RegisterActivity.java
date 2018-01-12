@@ -81,7 +81,8 @@ public class RegisterActivity extends AppCompatActivity {
                 try {
                     if (message.getInt("response") > 0) {
                         // Сохранение последних данных НЕ РАБОТАЕТ!!!!!!!
-                        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+                        // решено: надо использовать getSharedPreferences вместо getPreferences
+                        SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString("login", login);
                         editor.putString("password", password);

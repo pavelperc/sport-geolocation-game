@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.perc.pavel.sportgeolocationgame.StartGameActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:id="@+id/btnCreateGame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="btnCreateGameClick"
+            android:text="Создать игру"/>
+
+        <Button
+            android:id="@+id/btnJoinGame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="btnJoinGameClick"
+            android:text="Подключиться к игре по ID:"/>
+
+        <EditText
+            android:id="@+id/etRoomId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="room id"
+            android:inputType="textPersonName"/>
+    </LinearLayout>
+
+</RelativeLayout>

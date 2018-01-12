@@ -3,10 +3,15 @@ package com.perc.pavel.sportgeolocationgame;
 import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Handler;
@@ -16,9 +21,16 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,6 +41,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -47,119 +60,65 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class GoogleMapsActivity extends AppCompatActivity 
+        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private static final int FLAGS_NUMBER = 30;
     private Random rnd = new Random();
     private GoogleMap googleMap;
+    SupportMapFragment mapFragment;
+    
+    private FakeGps fakeGps;
+    
     private Map<String, Player> playersMap = new HashMap<>();
-    private Marker locationMarker;
     private Map<String, Marker> playerMarkersMap = new HashMap<>();
     
     
-    private final Handler updatePlayersHandler = new Handler();
+    private ArrayList<Flag> flags = new ArrayList<>();
+    private ArrayList<Marker> flagMarkers = new ArrayList<>();
+    private ArrayList<Integer> teamColors = new ArrayList<>();
+    private Map<Marker, Flag> markerToFlagMap = new HashMap<>();
     
-    /**
-     * Циклическое обновление состояния игроков
-     */
-    private final Runnable updatePlayersRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.d("my_tag", "in updatePLayersRunnable");
-            // собираем свои данные
-            JSONObject jo = new JSONObject();
-            try {
-                jo.put("type", "getPlayerLocations");
-                jo.put("lat", myLastLocation.getLatitude());
-                jo.put("lng", myLastLocation.getLongitude());
-            } catch (JSONException ignored) {}
-            // отправляем запрос на получение данных игроков
-            TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-                @Override
-                public void onMessageReceived(JSONObject message) {
-                    try {
-                        JSONArray ja = message.getJSONArray("players");
-                        for (int i = 0; i < ja.length(); i++) {
-                            JSONObject jo = ja.getJSONObject(i);
-                            
-                            // создаём новый объект пользователя по json
-                            Player p = new Player(jo);
-                            Log.d("my_tag", "player received: " + p);
-                            
-                            playersMap.put(p.name, p);
-                            // Если этот пользователь есть на карте - анимируем его положение. Иначе - добавляем
-                            if (playerMarkersMap.containsKey(jo.getString("name"))) {
-                                updatePlayerMarker(playerMarkersMap.get(p.name), p);
-                            }
-                            else {
-                                addPlayerMarker(p);
-                            }
-                            // ПОЧЕМУ БЕЗ ЭТОГО ВСЁ ВИСНЕТ??????????
-                            updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
-                            
-                            updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
-                        }
-                    } catch (JSONException ignored){}
-                }
-            });
-        }
-    };
-
-    private FusedLocationProviderClient fusedLocationClient;
-
+    private int myTeamColor;
+    private Marker myLocationMarker;
     /**
      * Последнее местоположение.
      */
     private Location myLastLocation = null;
-
+    
+    
     /**
-     * Регулярное обновление местоположения.
+     * Управляет отложенными потоками для обновления данных с сервера
      */
-    private final LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location location = locationResult.getLastLocation();
-            
-            Log.d("my_tag", "got location result: (" 
-                    + location.getLatitude() + "," + location.getLongitude()
-                    + ") bearing = " + location.getBearing()
-                    + "accuracy = " + location.getAccuracy());
-
-
-            if (myLastLocation == null) {
-                myLastLocation = location;
-                onFirstLocationUpdate();
-            } else {
-                // Сами вычисляем направление текущего игрока
-                float newBearing = myLastLocation.bearingTo(location);
-                myLastLocation = location;
-                myLastLocation.setBearing(newBearing);
-                
-                // Поворот маркера
-                locationMarker.setRotation(location.getBearing());
-                
-                // Анимация маркера
-                ValueAnimator markerAnimator = ObjectAnimator.ofObject(locationMarker, "position",
-                        new LatLngEvaluator(), locationMarker.getPosition(), locToLL(myLastLocation));
-                markerAnimator.setDuration(500);
-                markerAnimator.start();
-            }
-        }
-
-        ;
-    };
+    private final Handler updatePlayersHandler = new Handler();
+    /**
+     * Нужен для запроса на старт и остановку обновлений геолокации
+     */
+    private FusedLocationProviderClient fusedLocationClient;
+    
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_maps);
         
-        
-        
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
         
+        
+        // Треть карты должна уехать вниз за экран когда mapFragment.getView будет отрисован
+        mapFragment.getView().post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup.LayoutParams params = mapFragment.getView().getLayoutParams();
+                // params.height изначально равна -1 (MATCH_PARENT)
+                // а вот mapFragment.getView().getHeight() выдаёт настоящую высоту
+                params.height = (int) (mapFragment.getView().getHeight() * 1.5);
+                mapFragment.getView().setLayoutParams(params);
+            }
+        });
+        
+        mapFragment.getMapAsync(this);
         
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
@@ -169,13 +128,54 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         this.googleMap = googleMap;
         googleMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
-                        this, R.raw.green_map_style));
+                        this, R.raw.purple_map_style));
         
         //googleMap.setBuildingsEnabled(false);
-        startLocationUpdates();
+    
+        // -----настройка управления геолокациией-----
+        
+        LinearLayout llRotate = (LinearLayout) findViewById(R.id.llRotate);
+        SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
+        llRotate.setVisibility(pref.getBoolean("fakeGps", false) ? View.VISIBLE: View.GONE);
+        if (pref.getBoolean("fakeGps", false)) {
+            // Настройка fakeGps и начального местоположения
+            double lat, lng;
+            try {
+                String locationStr = pref.getString("startGps", "");
+                lat = Double.valueOf(locationStr.split("; ")[0]);
+                lng = Double.valueOf(locationStr.split("; ")[1]);
+            } catch (Exception e) {
+//                // New York
+//                lat = 40.730610;
+//                lng = -73.935242;
+                
+                // Moscow
+                lat = 55.7513367;
+                lng = 37.6255067;
+            }
+            
+            fakeGps = new FakeGps(lat, lng, mLocationCallback);
+            //fakeGps.start();
+    
+            // настройка переключателя ходьбы
+            Switch swchGo = (Switch) findViewById(R.id.swchGo);
+            swchGo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked)
+                        fakeGps.start();
+                    else
+                        fakeGps.stop();
+                }
+            });
+        }
+        else {
+            // считываем реальную геолокацию
+            startLocationUpdates();
+        }
     }
-
-
+    
+    
     private void startLocationUpdates() {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(3000);
@@ -183,9 +183,7 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         try {
             fusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
-        } catch (SecurityException ignored) {
-        }
-        ;
+        } catch (SecurityException ignored) {};
 
         Log.d("my_tag", "location update started");
 
@@ -193,58 +191,62 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
 
     private void stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if (fakeGps != null) {
+            fakeGps.stop();
+        }
         Log.d("my_tag", "location update stopped");
     }
-
+    
+    
+    /**
+     * Вызывается после первого получения геолокации игрока
+     * Содержит старт и настройку новой игры, создание флажков и команд
+     */
     private void onFirstLocationUpdate() {
-        
+    
+        // создавём цвета команд
+        teamColors.clear();
+        teamColors.add(Color.parseColor("#972EFF"));
+        teamColors.add(Color.parseColor("#FFF00D"));
+        myTeamColor = teamColors.get(0);
         
         // Создаём маркер игрока
-        locationMarker = googleMap.addMarker(new MarkerOptions()
+        myLocationMarker = googleMap.addMarker(new MarkerOptions()
                 .position(locToLL(myLastLocation))
                 .anchor(0.5f, 0.5f)
-                .icon(vectorToBitmap(R.drawable.ic_white_arrow, Color.BLUE))
+                .icon(getColoredImage(R.drawable.white_arrow_me, myTeamColor))
                 .zIndex(1)
+                .rotation(0)
                 .flat(true));
-        locationMarker.setTag("player-location");
+        myLocationMarker.setTag("player-location");
         
         // Создаём маркеры флажков
         double lat = myLastLocation.getLatitude();
         double lng = myLastLocation.getLongitude();
         double delta = 0.01;// В градусах
+    
+        
         
         //BitmapDescriptor flagIcon = BitmapDescriptorFactory.fromResource(R.drawable.purple_flag);
-        
-        ArrayList<MarkerOptions> flags = new ArrayList<>();
         for (int i = 0; i < FLAGS_NUMBER; i++) {
             LatLng ll = new LatLng(lat + rnd.nextDouble() * delta - delta / 2, lng + rnd.nextDouble() * delta - delta / 2);
-            googleMap.addMarker(new MarkerOptions()
+            int color = teamColors.get(i % teamColors.size());
+            Flag flag = new Flag(ll.latitude, ll.longitude, color, i);
+            
+            
+            flags.add(flag);
+            Marker fm = googleMap.addMarker(new MarkerOptions()
                     .position(ll)
                     .anchor(8f / 48f, 1f)
                     .zIndex(2)
-                    .icon(vectorToBitmap(R.drawable.ic_white_flag, Color.MAGENTA))).setTag("flag_" + i);
+                    .icon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation())));
+            fm.setTag("flag");
+            markerToFlagMap.put(fm, flag);
         }
         
         
-        
-        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(@NonNull Marker marker) {
-                if (marker.getTag() == "player-location")
-                    return true;
-                if (marker.getTag() == "player") {
-                    return false;
-                }
-                
-                double dist = myLastLocation.distanceTo(llToLoc(marker.getPosition()));
-                Toast.makeText(GoogleMapsActivity.this, marker.getTag() + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
-                
-                if (dist < 200) {
-                    marker.remove();
-                }
-                return true;
-            }
-        });
+        // обработка нажатия на маркер
+        googleMap.setOnMarkerClickListener(this);
 
 
         // Мнгновенное перемещение камеры в центр локации с заданным масштабом
@@ -268,6 +270,18 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
             jo.put("type", "startGame");
             jo.put("lat", myLastLocation.getLatitude());
             jo.put("lng", myLastLocation.getLongitude());
+            
+            JSONObject setup = new JSONObject();
+            setup.put("teamColors", new JSONArray(teamColors));
+            
+            JSONArray jFlags = new JSONArray();
+            for (Flag flag : flags) {
+                jFlags.put(flag.getJson());
+            }
+            setup.put("flags", jFlags);
+            
+            jo.put("setupGameInfo", setup);
+            
         } catch (JSONException ignored) {}
         TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
             @Override
@@ -290,7 +304,7 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         Marker marker = googleMap.addMarker(new MarkerOptions()
                 .position(locToLL(myLastLocation))
                 .anchor(0.5f, 0.5f)
-                .icon(vectorToBitmap(R.drawable.ic_white_arrow, player.teamColor))
+                .icon(getColoredImage(R.drawable.white_arrow, player.teamColor))
                 .title(player.name)
                 .zIndex(0)
                 .flat(true));
@@ -298,6 +312,11 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         playerMarkersMap.put(player.name, marker);
     }
     
+    /**
+     * Обновление маркеров других игроков
+     * @param marker
+     * @param p
+     */
     private void updatePlayerMarker(Marker marker, Player p) {
         // Сами вычисляем направление игрока
         Location oldPos = llToLoc(marker.getPosition());
@@ -332,20 +351,37 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
     }
     
     void btnMyLocationClick(View v) {
-//        // Анимация камеры
-//        if (myLastLocation != null)
-//            googleMap.animateCamera(CameraUpdateFactory.newLatLng(locToLL(myLastLocation)), 1000);
-
         if (myLastLocation != null) {
-            // Анимация камеры
-            CameraPosition position = new CameraPosition.Builder()
+            
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
                     .tilt(googleMap.getCameraPosition().tilt)// Наклон
                     .target(locToLL(myLastLocation))
                     .zoom(18)
                     .bearing(myLastLocation.getBearing())// Направление
-                    .build();
-
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500, null);
+                    .build()));
+            
+            
+//            // Вычисление местоположения камеры, чтобы маркер стал внизу карты
+//            View view = mapFragment.getView();
+//            
+//            Projection projection = googleMap.getProjection();
+//            LatLng markerPosition = locToLL(myLastLocation);
+//            Point markerPoint = projection.toScreenLocation(markerPosition);
+//            Point targetPoint = new Point(markerPoint.x, markerPoint.y - view.getHeight() / 4);
+//            // Нужная позиция
+//            LatLng targetPosition = projection.fromScreenLocation(targetPoint);
+//            
+//            
+//            
+//            // Анимация камеры
+//            CameraPosition position = new CameraPosition.Builder()
+//                    .tilt(googleMap.getCameraPosition().tilt)// Наклон
+//                    .target(targetPosition)
+//                    .zoom(18) // непонятно как будет работать со сдвигом
+//                    .bearing(myLastLocation.getBearing())// Направление
+//                    .build();
+//
+//            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500, null);
         }
     }
 
@@ -373,8 +409,80 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
     
+    /**
+     * Получить по id ресурса картинку, окрашенную в цвет через Multiply
+     * @param id ресурс
+     * @param color цвет
+     * @return BitmapDescriptor (нужен для создания значков маркеров)
+     */
+    private BitmapDescriptor getColoredImage(@DrawableRes int id, @ColorInt int color) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), id);
+        Paint paint = new Paint();
+        paint.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
+        Bitmap bitmapResult = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmapResult);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+        return BitmapDescriptorFactory.fromBitmap(bitmapResult);
+    }
     
-
+    /**
+     * Обработка нажатий на маркеры
+     * @param marker маркер
+     * @return возвращает обработано ли нажатие на маркер 
+     * (если обработано, то не надо открывать окно с информацией о маркере)
+     */
+    @Override
+    public boolean onMarkerClick(@NonNull final Marker marker) {
+        if (marker.getTag() == "player-location")
+            return true;
+        if (marker.getTag() == "player") {
+            return false;
+        }
+        
+        // если маркер - флажок
+        
+        
+        double dist = myLastLocation.distanceTo(llToLoc(marker.getPosition()));
+        final Flag flag = markerToFlagMap.get(marker);
+        if (flag != null) {
+            Toast.makeText(GoogleMapsActivity.this, "flag " + flag.number + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
+            if (dist < 100 && flag.teamColor == myTeamColor && !flag.activated) {
+                flag.activate();
+                // перекрашиваем флаг в свой цвет
+                // flag.teamColor = myTeamColor;
+                marker.setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
+                
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("type", "activateFlag");
+                    jo.put("index", flag.number);
+                    jo.put("color", myTeamColor);
+                } catch (JSONException ignored) {}
+    
+    
+                TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
+                    @Override
+                    public void onMessageReceived(JSONObject message) {
+                        try {
+                            // если не удалось обновить флажок на сервере
+                            if (message.getInt("response") == 0) {
+                                Toast.makeText(GoogleMapsActivity.this, "error: " + message.optString("error"), Toast.LENGTH_SHORT).show();
+                                // всё отменяем
+                                flag.deactivate();
+                                marker.setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
+                            }
+                        } catch (JSONException ignored) {}
+                    }
+                });
+            }
+        }
+        else {
+            Toast.makeText(GoogleMapsActivity.this, "unknown flag", Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+    
+    
     /**
      * Настраивает анимацию маркера.
      */
@@ -398,4 +506,141 @@ public class GoogleMapsActivity extends AppCompatActivity implements OnMapReadyC
         stopLocationUpdates();
         stopPlayersUpdates();
     }
+    
+    
+    // обработка нажатия кнопок поворота маркера с игроком
+    
+    public void btnTurnLeftClick(View v) {
+        // в градусах
+        float rotation = myLocationMarker.getRotation() - 30;
+        myLocationMarker.setRotation(rotation);
+        if (fakeGps != null) {
+            fakeGps.setBearing(rotation);
+        }
+    }
+    public void btnTurnRightClick(View v) {
+        // в градусах
+        float rotation = myLocationMarker.getRotation() + 30;
+        myLocationMarker.setRotation(rotation);
+        if (fakeGps != null) {
+            fakeGps.setBearing(rotation);
+        }
+    }
+    
+    //------------------ПЕРЕМЕННЫЕ С РЕАЛИЗОВАННЫМИ ИНТЕРФЕЙСАМИ------------------
+    
+    /**
+     * Циклическое обновление состояния игроков
+     */
+    private final Runnable updatePlayersRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("my_tag", "in updatePLayersRunnable");
+            // собираем свои данные
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("type", "getPlayerLocations");
+                jo.put("lat", myLastLocation.getLatitude());
+                jo.put("lng", myLastLocation.getLongitude());
+                
+//                // собираем флаги
+//                JSONArray jFlags = new JSONArray();
+//                for (Flag flag : flags) {
+//                    jFlags.put(flag.getJson());
+//                }
+//                jo.put("flags", jFlags);
+                
+            } catch (JSONException ignored) {}
+            // отправляем запрос на получение данных игроков
+            TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
+                @Override
+                public void onMessageReceived(JSONObject message) {
+                    try {
+                        // обновляем игроков
+                        JSONArray ja = message.getJSONArray("players");
+                        for (int i = 0; i < ja.length(); i++) {
+                            JSONObject jo = ja.getJSONObject(i);
+                            
+                            // создаём новый объект пользователя по json
+                            Player p = new Player(jo);
+                            Log.d("my_tag", "player received: " + p);
+                            
+                            playersMap.put(p.name, p);
+                            // Если этот пользователь есть на карте - анимируем его положение. Иначе - добавляем
+                            if (playerMarkersMap.containsKey(jo.getString("name"))) {
+                                updatePlayerMarker(playerMarkersMap.get(p.name), p);
+                            }
+                            else {
+                                addPlayerMarker(p);
+                            }
+                        }
+                        
+                        // обновляем флажки (присланы только изменённые)
+                        JSONArray jFlags = message.getJSONArray("flags");
+                        for (int i = 0; i < jFlags.length(); i++) {
+                            JSONObject jo = jFlags.getJSONObject(i);
+                            
+                            // создаём новый объект пользователя по json
+                            Flag flag = new Flag(jo);
+                            Log.d("my_tag", "flag received: " + flag);
+                            
+                            
+                            // Если флажок есть на карте (и в массиве флажков)
+                            if (flagMarkers.size() > flag.number) {
+                                flags.set(flag.number, flag);
+                                flagMarkers.get(flag.number).setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
+                            }
+                        }
+                        
+                        
+                        
+                        
+                    } catch (JSONException ignored){}
+    
+                    // ПОЧЕМУ БЕЗ ЭТОГО ВСЁ ВИСНЕТ?????????? (наверное потому что это было в цикле...)
+                    updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
+                    
+                    updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
+                }
+            });
+        }
+    };
+    
+    /**
+     * Регулярное обновление местоположения.
+     */
+    private final LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location location = locationResult.getLastLocation();
+            
+            Log.d("my_tag", "got location result: ("
+                    + location.getLatitude() + "," + location.getLongitude()
+                    + ") bearing = " + location.getBearing()
+                    + "accuracy = " + location.getAccuracy());
+            
+            
+            if (myLastLocation == null) {
+                myLastLocation = location;
+                onFirstLocationUpdate();
+            } else {
+                // Сами вычисляем направление текущего игрока
+                float newBearing = myLastLocation.bearingTo(location);
+                myLastLocation = location;
+                myLastLocation.setBearing(newBearing);
+                
+                // Поворот маркера
+                myLocationMarker.setRotation(location.getBearing());
+                
+                // Анимация маркера
+                ValueAnimator markerAnimator = ObjectAnimator.ofObject(myLocationMarker, "position",
+                        new LatLngEvaluator(), myLocationMarker.getPosition(), locToLL(myLastLocation));
+                markerAnimator.setDuration(500);
+                markerAnimator.start();
+            }
+        }
+        
+        ;
+    };
+    
 }

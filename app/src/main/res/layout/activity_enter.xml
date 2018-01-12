@@ -16,7 +16,8 @@
         android:layout_margin="10dp"
         android:background="@drawable/shape_grey_rect_border"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:id="@+id/linearLayout2">
 
         <EditText
             android:id="@+id/etLogin"
@@ -77,5 +78,32 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/pbLoading"
+        android:layout_alignParentStart="true">
+
+        <CheckBox
+            android:id="@+id/chbFakeGps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fake gps: "
+            android:textAppearance="@style/TextAppearance.AppCompat.Caption"/>
+
+        <EditText
+            android:id="@+id/etStartGps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="0.0; 0.0"
+            android:inputType="none"
+            android:textAppearance="@style/TextAppearance.AppCompat.Caption"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

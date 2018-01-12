@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -35,6 +36,9 @@ public class EnterActivity extends AppCompatActivity {
     EditText etPassword;
     ProgressBar pbLoading;
     
+    CheckBox chbFakeGps;
+    EditText etStartGps;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +47,8 @@ public class EnterActivity extends AppCompatActivity {
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+        chbFakeGps = (CheckBox) findViewById(R.id.chbFakeGps);
+        etStartGps = (EditText) findViewById(R.id.etStartGps);
         
         askPermissions();
         checkGoogleServices();
@@ -53,9 +59,12 @@ public class EnterActivity extends AppCompatActivity {
      * Если сохранены последние данные входа - они восстанавливаются.
      */
     private void restoreLastLoginData() {
-        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
         etLogin.setText(pref.getString("login", ""));
         etPassword.setText(pref.getString("password", ""));
+        
+        chbFakeGps.setChecked(pref.getBoolean("fakeGps", false));
+        etStartGps.setText(pref.getString("startGps", ""));
     }
 
     /**
@@ -123,15 +132,63 @@ public class EnterActivity extends AppCompatActivity {
 //        Log.d("my_tag", "login = " + login + "\tpassword = " + password);
         
         
+        
+
+
+        pbLoading.setVisibility(View.VISIBLE);
+        
+//        TcpClient.getInstance().startAsync(new TcpListener() {
+//            @Override
+//            public void onTCPMessageReceived(JSONObject message) {
+//                pbLoading.setVisibility(View.GONE);
+//                try {
+//                    if (message.getInt("response") > 0) {
+//                        Toast.makeText(EnterActivity.this, "Вход успешен.", Toast.LENGTH_SHORT).show();
+//                        
+//                        // Сохранение последних данных
+//                        SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
+//                        SharedPreferences.Editor editor = pref.edit();
+//                        editor.putString("login", login);
+//                        editor.putString("password", password);
+//                        editor.putString("startGps", etStartGps.getText().toString());
+//                        editor.putBoolean("fakeGps", chbFakeGps.isChecked());
+//                        editor.apply();
+//
+//                        startActivity(new Intent(EnterActivity.this, StartGameActivity.class));
+//                    } else {
+//                        Toast.makeText(EnterActivity.this, "Ошибка входа.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
+//                    }
+//                } catch (JSONException ignored){
+//                    Toast.makeText(EnterActivity.this, "Error:\n" + ignored.getMessage(), Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//            
+//            @Override
+//            public void onConnected() {
+//                JSONObject send = new JSONObject();
+//                try {
+//                    send.put("type", "authorization");
+//                    send.put("login", login);
+//                    send.put("password", password);
+//                } catch (JSONException ignored){}
+//                
+//                TcpClient.getInstance().sendMessage(send);
+//            }
+//            
+//            @Override
+//            public void onDisconnected() {
+//        
+//            }
+//        });
+        
+        
         JSONObject send = new JSONObject();
         try {
             send.put("type", "authorization");
             send.put("login", login);
             send.put("password", password);
         } catch (JSONException ignored){}
-
-
-        pbLoading.setVisibility(View.VISIBLE);
+        
         TcpClientFake.getInstance().httpRequest(send, new HttpListener() {
             @Override
             public void onMessageReceived(JSONObject message) {
@@ -139,14 +196,16 @@ public class EnterActivity extends AppCompatActivity {
                 try {
                     if (message.getInt("response") > 0) {
                         //Toast.makeText(EnterActivity.this, "Вход успешен.", Toast.LENGTH_SHORT).show();
-                        
+
                         // Сохранение последних данных
-                        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+                        SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
                         editor.putString("login", login);
                         editor.putString("password", password);
+                        editor.putString("startGps", etStartGps.getText().toString());
+                        editor.putBoolean("fakeGps", chbFakeGps.isChecked());
                         editor.apply();
-                                                
+
                         startActivity(new Intent(EnterActivity.this, GoogleMapsActivity.class));
                     } else {
                         Toast.makeText(EnterActivity.this, "Ошибка входа.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
@@ -162,8 +221,9 @@ public class EnterActivity extends AppCompatActivity {
         if (requestCode == REGISTRATION_REQUEST && resultCode == RESULT_OK) {
 
             // Сохранение последних данных
-            // В RegisterActivity ПОЧЕМУ-ТО НЕ РАБОТАЕТ
-            SharedPreferences pref = getPreferences(MODE_PRIVATE);
+            // В RegisterActivity ПОЧЕМУ-ТО НЕ РАБОТАЕТ 
+            // (решено: потому что getPreferences сохраняет настройки отдельно для активити)
+            SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
             SharedPreferences.Editor editor = pref.edit();
             editor.putString("login", data.getStringExtra("login"));
             editor.putString("password", data.getStringExtra("password"));

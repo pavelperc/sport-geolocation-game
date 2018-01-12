@@ -1,6 +1,7 @@
 package com.perc.pavel.sportgeolocationgame;
 
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -13,9 +14,13 @@ interface TcpListener {
      */
 	void onTCPMessageReceived(JSONObject message);
 
-    /**
-     * Вызывается при подключении или отключении от сервера.
-     * @param isConnectedNow True - сервер подключён, False - сервер отключён.
-     */
-	void onTCPConnectionStatusChanged(boolean isConnectedNow);
+//    /**
+//     * Вызывается при подключении или отключении от сервера.
+//     * @param isConnectedNow True - сервер подключён, False - сервер отключён.
+//     */
+//	void onTCPConnectionStatusChanged(boolean isConnectedNow);
+//    
+    
+    void onConnected();
+    void onDisconnected();
 }

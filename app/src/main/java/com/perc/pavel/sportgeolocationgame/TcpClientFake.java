@@ -1,9 +1,6 @@
 package com.perc.pavel.sportgeolocationgame;
 
-import android.app.Activity;
-import android.graphics.Color;
 import android.os.Handler;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,31 +18,19 @@ import java.util.Random;
  */
 class TcpClientFake {
     
-    static class Flag {
-        double lat;
-        double lng;
-        
-        public Flag(double lat, double lng) {
-            this.lat = lat;
-            this.lng = lng;
-        }
-    }
-    
     private static TcpClientFake instance;
-    
     static TcpClientFake getInstance() {
         if (instance == null)
             instance = new TcpClientFake();
         return instance;
     }
     
-    ArrayList<Player> players = new ArrayList<>();
-    //ArrayList<Flag> flags;
+    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<Flag> flags = new ArrayList<>();
+    private ArrayList<Integer> teamColors = new ArrayList<>();
     
-    
-    
-    final int OTHER_PLAYERS_COUNT = 4;
-    Random rnd = new Random();
+    private final int OTHER_PLAYERS_COUNT = 4;
+    private Random rnd = new Random();
     
     
     private TcpListener tcpListener = null;
@@ -56,7 +41,8 @@ class TcpClientFake {
      */
     void startAsync(TcpListener messageListener) {
         tcpListener = messageListener;
-        tcpListener.onTCPConnectionStatusChanged(true);
+//        tcpListener.onTCPConnectionStatusChanged(true);
+        tcpListener.onConnected();
     }
 
     /**
@@ -119,20 +105,45 @@ class TcpClientFake {
                     double lng = message.getDouble("lng");
                     
                     
-                    players.clear();
-                    for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
-                        Player player = new Player(
-                                "player_" + i,
-                                lat + (rnd.nextDouble() - 0.5) * llDelta,
-                                lng + (rnd.nextDouble() - 0.5) * llDelta,
-                                (i % 2 == 0 ? Color.RED : Color.GREEN));
-                                
-                        players.add(player);
+                    // для того, кто создаёт игру
+                    if (message.has("setupGameInfo")) {
+                        JSONObject setupInfo = message.getJSONObject("setupGameInfo");
+    
+                        // Сохраняем цвета команд
+                        JSONArray jColors = setupInfo.getJSONArray("teamColors");
+                        teamColors.clear();
+                        for (int i = 0; i < jColors.length(); i++) {
+                            teamColors.add(jColors.getInt(i));
+                        }
+    
+                        // Сохраняем флажки
+                        JSONArray jFlags = setupInfo.getJSONArray("flags");
+                        flags.clear();
+                        for (int i = 0; i < jFlags.length(); i++) {
+                            flags.add(new Flag(jFlags.getJSONObject(i)));
+                        }
+                        
+                        // создаём игроков
+                        players.clear();
+                        for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
+                            Player player = new Player(
+                                    "player_" + i,
+                                    lat + (rnd.nextDouble() - 0.5) * llDelta,
+                                    lng + (rnd.nextDouble() - 0.5) * llDelta,
+                                    // i + 1 так как нулевой цвет у игрока, приславшего настройку
+                                    teamColors.get((i + 1) % teamColors.size()));
+                            
+                            players.add(player);
+                        }
                     }
+                    
+                    
                     answer.put("response", 1);
+                    // возвращаем всем (пока у нас только создатель) нулевой цвет
+                    answer.put("teamColor", teamColors.get(0));
                     break;
                 case "getPlayerLocations":
-                    
+                    // заполняем позиции игроков
                     JSONArray jPlayers = new JSONArray();
                     for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
                         players.get(i).lat += (rnd.nextDouble() - (double)i/OTHER_PLAYERS_COUNT) * llDelta;
@@ -140,9 +151,25 @@ class TcpClientFake {
                         
                         jPlayers.put(players.get(i).getJson());
                     }
+//                    // заполняем позиции флажков
+//                    JSONArray jFlags = new JSONArray();
+//                    for (int i = 0; i < OTHER_PLAYERS_COUNT; i++) {
+//                        jFlags.put(flags.get(i).getJson());
+//                    }
                     
+                    // запаковываем отправку
                     answer.put("response", 1);
                     answer.put("players", jPlayers);
+//                    answer.put("flags", jFlags);
+                    break;
+                case "activateFlag":
+                    
+                    answer.put("response", 1);
+                    int index = message.getJSONObject("activateFlag").getInt("index");
+                    int color = message.getJSONObject("activateFlag").getInt("color");
+                    flags.get(index).teamColor = color;
+                    
+                    
                     break;
                 default:
                     answer.put("response", 0);
@@ -162,7 +189,8 @@ class TcpClientFake {
      * Остановка tcp соединения.
      */
     void stopClient() {
-        tcpListener.onTCPConnectionStatusChanged(false);
+//        tcpListener.onTCPConnectionStatusChanged(false);
+        tcpListener.onDisconnected();
         tcpListener = null;
     }
 
