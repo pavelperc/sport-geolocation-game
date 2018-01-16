@@ -69,7 +69,7 @@
 
                 <EditText
                     android:id="@+id/etChatBox"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginLeft="10dp"
@@ -98,13 +98,16 @@
 
         <Button
             android:id="@+id/btnExpandChat"
-            style="@style/Widget.AppCompat.Button.Small"
+            style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_weight="1"
+            android:background="@drawable/shape_filled_grey_rectangle"
+            android:drawableRight="@drawable/ic_expand_more_black_24dp"
+            android:minHeight="0dp"
             android:onClick="btnExpandChatClick"
-            android:text="show"
+            android:text="show chat"
             android:textSize="12sp"/>
 
     </LinearLayout>

@@ -598,10 +598,12 @@ public class GoogleMapsActivity extends AppCompatActivity
         Button b = (Button) v;
         if (rlChat.getVisibility() == View.VISIBLE) {
             rlChat.setVisibility(View.GONE);
-            b.setText("show");
+            b.setText("show chat");
+            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_more_black_24dp, 0);
         } else {
             rlChat.setVisibility(View.VISIBLE);
-            b.setText("hide");
+            b.setText("hide chat");
+            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_less_black_24dp, 0);
         }
     }
     
