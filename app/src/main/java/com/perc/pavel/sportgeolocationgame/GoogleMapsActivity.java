@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -21,16 +20,21 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,7 +45,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -57,12 +60,20 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class GoogleMapsActivity extends AppCompatActivity 
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private static final int FLAGS_NUMBER = 30;
+    
+    // из intent-а
+    /** Логин текущего игрока.*/
+    private String myLogin;
+    private int roomId;
+    private boolean createGame;
+    
     private Random rnd = new Random();
     private GoogleMap googleMap;
     SupportMapFragment mapFragment;
@@ -96,10 +107,22 @@ public class GoogleMapsActivity extends AppCompatActivity
     private FusedLocationProviderClient fusedLocationClient;
     
     
+    // Для чата
+    
+    private RecyclerView mMessageRecycler;
+    private MessageListAdapter mMessageAdapter;
+    private List<UserMessage> messageList;
+    private EditText etChatBox;
+    private RelativeLayout rlChat;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_maps);
+        myLogin = getIntent().getStringExtra("login");
+        roomId = getIntent().getIntExtra("roomId", -1);
+        createGame = getIntent().getBooleanExtra("createGame", false);
+        
         
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -121,6 +144,31 @@ public class GoogleMapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        
+        
+        // Создание и настройка чата
+        
+        etChatBox = (EditText) findViewById(R.id.etChatBox);
+        etChatBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    btnChatSendClick(null);
+                    return true;
+                }
+                return false;
+            }
+        });
+        
+        mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
+        messageList = new ArrayList<>();
+        mMessageAdapter = new MessageListAdapter(this, messageList, myLogin);
+        
+        mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mMessageRecycler.setAdapter(mMessageAdapter);
+        
+        rlChat = (RelativeLayout) findViewById(R.id.rlChat);
+        rlChat.setVisibility(View.GONE);
     }
     
     @Override
@@ -130,6 +178,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.purple_map_style));
         
+        googleMap.getUiSettings().setCompassEnabled(false);
         //googleMap.setBuildingsEnabled(false);
     
         // -----настройка управления геолокациией-----
@@ -196,7 +245,6 @@ public class GoogleMapsActivity extends AppCompatActivity
         }
         Log.d("my_tag", "location update stopped");
     }
-    
     
     /**
      * Вызывается после первого получения геолокации игрока
@@ -447,6 +495,8 @@ public class GoogleMapsActivity extends AppCompatActivity
         if (flag != null) {
             Toast.makeText(GoogleMapsActivity.this, "flag " + flag.number + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
             if (dist < 100 && flag.teamColor == myTeamColor && !flag.activated) {
+                addMessageToChat("I have captured the flag " + flag.number + "!!!", GoogleMapsActivity.this.myLogin);
+                addMessageToChat("Oh no!!", "somePlayer");
                 flag.activate();
                 // перекрашиваем флаг в свой цвет
                 // flag.teamColor = myTeamColor;
@@ -524,6 +574,34 @@ public class GoogleMapsActivity extends AppCompatActivity
         myLocationMarker.setRotation(rotation);
         if (fakeGps != null) {
             fakeGps.setBearing(rotation);
+        }
+    }
+    
+    
+    public void btnChatSendClick(View v) {
+        if (etChatBox.getText().toString().equals(""))
+            return;
+        
+        addMessageToChat(etChatBox.getText().toString(), myLogin);
+        etChatBox.setText("");
+    }
+    
+    private void addMessageToChat(String message, String login) {
+        messageList.add(new UserMessage(message, login));
+        mMessageAdapter.notifyDataSetChanged();
+        mMessageRecycler.scrollToPosition(messageList.size() - 1);
+//        mMessageAdapter.notifyItemInserted(messageList.size() - 1);
+    }
+    
+    
+    public void btnExpandChatClick(View v) {
+        Button b = (Button) v;
+        if (rlChat.getVisibility() == View.VISIBLE) {
+            rlChat.setVisibility(View.GONE);
+            b.setText("show");
+        } else {
+            rlChat.setVisibility(View.VISIBLE);
+            b.setText("hide");
         }
     }
     

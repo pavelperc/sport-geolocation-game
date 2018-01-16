@@ -205,8 +205,10 @@ public class EnterActivity extends AppCompatActivity {
                         editor.putString("startGps", etStartGps.getText().toString());
                         editor.putBoolean("fakeGps", chbFakeGps.isChecked());
                         editor.apply();
-
-                        startActivity(new Intent(EnterActivity.this, GoogleMapsActivity.class));
+                        
+                        Intent intent = new Intent(EnterActivity.this, StartGameActivity.class);
+                        intent.putExtra("login", login);
+                        startActivity(intent);
                     } else {
                         Toast.makeText(EnterActivity.this, "Ошибка входа.\nError: " + message.getString("error"), Toast.LENGTH_SHORT).show();
                     }

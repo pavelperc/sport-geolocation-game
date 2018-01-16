@@ -72,4 +72,13 @@ class TcpClient {
     void clearAllMessageListeners() {
         
     }
+    
+    /**
+     * Запрос сервера в режиме http.
+     * @param message Сообщение серверу.
+     * @param onResult Интерфейс, в который сервер отправляет ответ. (Вызывается в основном потоке через Handler.post)
+     */
+    void httpRequest(final JSONObject message, final HttpListener onResult){
+        
+    }
 }
