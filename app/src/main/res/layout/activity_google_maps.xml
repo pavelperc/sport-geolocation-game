@@ -96,19 +96,44 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <Button
-            android:id="@+id/btnExpandChat"
-            style="@style/Widget.AppCompat.Button"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_weight="1"
-            android:background="@drawable/shape_filled_grey_rectangle"
-            android:drawableRight="@drawable/ic_expand_more_black_24dp"
-            android:minHeight="0dp"
-            android:onClick="btnExpandChatClick"
-            android:text="show chat"
-            android:textSize="12sp"/>
+            android:orientation="horizontal"
+            android:paddingLeft="2dp"
+            android:paddingTop="2dp"
+            android:weightSum="1">
+
+            <Button
+                android:id="@+id/btnExpandChat"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_gravity="left"
+                android:layout_weight="0.61"
+                android:background="@drawable/shape_filled_grey_rectangle"
+                android:drawableRight="@drawable/ic_expand_more_black_24dp"
+                android:minHeight="0dp"
+                android:onClick="btnExpandChatClick"
+                android:paddingLeft="10dp"
+                android:text="show chat"
+                android:textAlignment="viewStart"
+                android:textSize="12sp"
+                />
+
+            <TextView
+                android:id="@+id/tvMissedMsg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/round_circle_filled"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="+11"
+                android:textColor="#FFFFFF"
+                android:visibility="visible"/>
+        </LinearLayout>
 
     </LinearLayout>
 

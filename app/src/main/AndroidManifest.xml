@@ -48,7 +48,8 @@
             android:name=".GoogleMapsActivity"
             android:windowSoftInputMode="stateHidden"
             android:label="@string/title_activity_google_maps"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait">
         </activity>
         <activity android:name=".StartGameActivity">
         </activity>

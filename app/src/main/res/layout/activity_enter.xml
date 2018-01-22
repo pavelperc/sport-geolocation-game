@@ -19,21 +19,37 @@
         android:padding="10dp"
         android:id="@+id/linearLayout2">
 
-        <EditText
-            android:id="@+id/etLogin"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Логин"
-            android:inputType="text"/>
+            android:layout_height="match_parent">
 
-        <EditText
-            android:id="@+id/etPassword"
+            <EditText
+                android:id="@+id/etLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Логин"
+                android:inputType="text"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Пароль"
-            android:inputType="textPassword"/>
+            android:layout_height="match_parent"
+            app:passwordToggleEnabled="true">
+
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_toStartOf="@+id/btnEye"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Пароль"
+                android:imeOptions="actionGo"
+                android:inputType="textPassword"/>
+        </android.support.design.widget.TextInputLayout>
 
         <Button
             android:id="@+id/btnEnter"

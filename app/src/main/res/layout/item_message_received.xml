@@ -15,10 +15,12 @@
         android:id="@+id/text_message_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="John Doe:"
+        android:elevation="2dp"
+        android:maxWidth="80dp"
+        android:text="У Меня Очень Длинное Имя:"
+        android:textAlignment="textEnd"
         android:textSize="12sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp"/>
 
     <TextView
@@ -32,7 +34,7 @@
         android:paddingLeft="6dp"
         android:paddingRight="6dp"
         android:paddingTop="2dp"
-        android:text="Hi man, how are you?"
+        android:text="Hi man, how are you?aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         app:layout_constraintLeft_toRightOf="@+id/image_message_profile"
         app:layout_constraintTop_toBottomOf="@+id/text_message_name"/>
 

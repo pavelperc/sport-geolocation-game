@@ -1,12 +1,35 @@
 package com.perc.pavel.sportgeolocationgame;
 
+import android.os.Handler;
+import android.util.Log;
+
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by pavel on 12.09.2017.
  * <p>
  * Класс для работы с сервером через TCP.
- * 
+ * <p>
  * В отдельном потоке ловит сообщения сервера и отсылает их всем подключённым слушателям.
  * <p>
  * Всё частично взято отсюда:
@@ -15,21 +38,48 @@ import org.json.JSONObject;
 
 class TcpClient {
     
-    // ПОМЕНЯТЬ
-    private static final String SERVER_IP = "62.109.23.138"; //server IP address
+    static final String SERVER_IP = "92.63.105.60"; //server IP address
+    //    private static final int SERVER_PORT_TCP = 7071;
+    static final int SERVER_PORT_HTTP = 5050;
+    private volatile boolean isTcpRunning = false;
+    private volatile boolean isTryingToStop = false;
     
-    private static final int SERVER_PORT = 9090;
+    public boolean isTcpRunning() {
+        return isTcpRunning;
+    }
     
+    int getServerPortTcp() {
+        return SERVER_PORT_HTTP + 1;
+    }
+    
+    static final String SERVER_LOG = "server_log";
+    
+    
+    // used to send messages
+    private PrintWriter mBufferOut;
+    // used to read messages from the server
+    private BufferedReader mBufferIn;
+    
+    private Thread backgroundTcpThread;
+    
+    private List<TcpMessageListener> messageListeners = new ArrayList<>();
     
     private static TcpClient instance;
     
+    // HTTP:
+    private OkHttpClient client;
+    
     
     static TcpClient getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new TcpClient();
+        }
         return instance;
     }
     
+    private TcpClient() {
+        client = new OkHttpClient();
+    }
     
     /**
      * Отправить сообщение на сервер.
@@ -37,23 +87,160 @@ class TcpClient {
      * @param message JSON объект, отправляемый клиентом.
      */
     void sendMessage(final JSONObject message) {
-        
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (mBufferOut != null && !mBufferOut.checkError()) {
+                    mBufferOut.write(message.toString());
+                    mBufferOut.flush();
+                    Log.d(SERVER_LOG, "Sent message: " + message.toString());
+                }
+            }
+        }).start();
     }
     
     /**
      * Отключиться от сервера.
      */
     void stopClient() {
+        // ставим флаг, чтобы из исключения, выпавшего в потоке слушателя сервера не вызвалось onConnectionError
+        isTryingToStop = true;
         
+        
+        if (mBufferOut != null) {
+            mBufferOut.flush();
+            mBufferOut.close();
+            Log.d(SERVER_LOG, "closed buffer out.");
+            
+        }
+        if (mBufferIn != null) {
+            try {
+                mBufferIn.close();
+                Log.d(SERVER_LOG, "closed buffer in.");
+            } catch (IOException e) {
+                Log.d(SERVER_LOG, "error in closing mBufferIn");
+            }
+        }
+        mBufferIn = null;
+        mBufferOut = null;
     }
     
+    /**
+     * Отключиться от сервера, если подключён.
+     *
+     * @param connectionListener Слушатель подключения для повторного старта.
+     */
+    void reconnect(TcpConnectionListener connectionListener) {
+        if (isTcpRunning) {
+            stopClient();
+            try {// ждём пока завершится процесс
+                backgroundTcpThread.join();
+            } catch (InterruptedException e) {
+            }
+            
+            startAsync(connectionListener);
+        }
+    }
     
     /**
      * Подключиться к серверу.
      *
-     * @param messageListener Интерфейс для получения ответов от сервера и состояния о подключении
+     * @param tcpConnectionListener Интерфейс для получения состояния о подключении
      */
-    void startAsync(TcpListener messageListener) {
+    void startAsync(final TcpConnectionListener tcpConnectionListener) {
+        
+        if (isTcpRunning) {
+//            tcpConnectionListener.onConnectionError("SERVER IS RUNNING");
+            Log.d(SERVER_LOG, "TRIED TO START AGAIN ALREADY RUNNING SERVER LISTENER");
+            return;
+        }
+        
+        final Handler handler = new Handler();
+        
+        isTcpRunning = true;
+        backgroundTcpThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(SERVER_LOG, "Start connecting: ");
+                
+                try (Socket socket = new Socket(SERVER_IP, getServerPortTcp())) {
+                    //sends the message to the server
+                    mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
+                    //receives the message which the server sends back
+                    mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    
+                    Log.d(SERVER_LOG, "Connected");// ??????
+                    
+                    // вызываем onConnected
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            tcpConnectionListener.onConnected();
+                        }
+                    });
+                    Log.d(SERVER_LOG, "Before loop");
+                    int charsRead = 0;
+                    char[] buffer = new char[1024]; //choose your buffer size if you need other than 1024
+                    
+                    // слушаем ответ от сервера. выходим из цикла только по исключениям
+                    while (true) {
+                        Log.d(SERVER_LOG, "begin loop");
+                        
+                        charsRead = mBufferIn.read(buffer);
+                        final String serverMessage = new String(buffer).substring(0, charsRead);
+                        
+                        Log.d(SERVER_LOG, "read server msg");
+                        
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // пытаемся прочитать сообщение в этом же потоке.
+                                try {
+                                    JSONObject jo = new JSONObject(serverMessage);
+                                    if (jo.has("error")) {// сервер не понял наш json
+                                        tcpConnectionListener.onConnectionError("server returned error: " + jo.getString("error"));
+                                    } else {// всё ОК, сервер понял json
+                                        for (TcpMessageListener listener : messageListeners) {
+                                            listener.onTCPMessageReceived(jo);
+                                        }
+                                    }
+                                } catch (final JSONException e) {// нам прислали неверный json
+                                    tcpConnectionListener.onConnectionError(e.getMessage());
+                                }
+                            }
+                        });
+                        
+                        Log.d(SERVER_LOG, "loop iteration ended.");
+                    }// end of loop
+                } catch (final IOException e) {// когда не достучались до сервера или закрыли выходной поток
+                    Log.d(SERVER_LOG, "IOException: " + e.getMessage() + " in---> " + Arrays.toString(e.getStackTrace()));
+                    
+                    // если мы попали сюда из за закрытия mBufferIn в stopClient - не отправляем onConnectionError.
+                    if (!isTryingToStop) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                tcpConnectionListener.onConnectionError(e.getMessage());
+                            }
+                        });
+                    }
+                } catch (final Exception e) {
+                    Log.d(SERVER_LOG, "Another Exception: " + e.getMessage());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            tcpConnectionListener.onConnectionError(e.getMessage());
+                        }
+                    });
+                }
+                
+                // выход из цикла и закрытие сокета.
+                Log.d(SERVER_LOG, "Closed socket thread");
+                isTcpRunning = false;
+                isTryingToStop = false;
+            }
+        });
+        backgroundTcpThread.start();
         
     }
     
@@ -62,23 +249,55 @@ class TcpClient {
      *
      * @param messageListener интерфейс для обратного вызова.
      */
-    void addMessageListener(TcpListener messageListener) {
-        
+    void addMessageListener(TcpMessageListener messageListener) {
+        messageListeners.add(messageListener);
     }
     
     /**
      * Удалить все messageListener
      */
     void clearAllMessageListeners() {
-        
+        messageListeners.clear();
     }
     
-    /**
-     * Запрос сервера в режиме http.
-     * @param message Сообщение серверу.
-     * @param onResult Интерфейс, в который сервер отправляет ответ. (Вызывается в основном потоке через Handler.post)
-     */
-    void httpRequest(final JSONObject message, final HttpListener onResult){
+    
+    static HttpUrl.Builder getUrlBuilder() {
+        return new HttpUrl.Builder()
+                .scheme("http")
+                .host(SERVER_IP)
+                .port(SERVER_PORT_HTTP);
+    }
+    
+    
+    void httpGetRequest(HttpUrl url, final HttpListener httpListener) {
+        final Handler handler = new Handler();
         
+        final Request request = new Request.Builder().url(url).build();
+        
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, final IOException e) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        httpListener.onFailure(e.getMessage());
+                    }
+                });
+            }
+            
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            httpListener.onResponse(response.body().string());
+                        } catch (IOException e) {
+                            httpListener.onFailure("Unexpected code: " + response);
+                        }
+                    }
+                });
+            }
+        });
     }
 }

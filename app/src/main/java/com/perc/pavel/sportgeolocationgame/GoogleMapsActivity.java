@@ -3,6 +3,7 @@ package com.perc.pavel.sportgeolocationgame;
 import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +29,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -59,6 +62,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,8 +73,8 @@ public class GoogleMapsActivity extends AppCompatActivity
     private static final int FLAGS_NUMBER = 30;
     
     // из intent-а
-    /** Логин текущего игрока.*/
-    private String myLogin;
+    /** Профиль текущего игрока.*/
+    Profile myProfile;
     private int roomId;
     private boolean createGame;
     
@@ -114,12 +118,15 @@ public class GoogleMapsActivity extends AppCompatActivity
     private List<UserMessage> messageList;
     private EditText etChatBox;
     private RelativeLayout rlChat;
+    private TextView tvMissedMsg;
+    private int missedMsgCount = 0;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_maps);
-        myLogin = getIntent().getStringExtra("login");
+        myProfile = (Profile) getIntent().getSerializableExtra("profile");
+//        myName = getIntent().getStringExtra("name");
         roomId = getIntent().getIntExtra("roomId", -1);
         createGame = getIntent().getBooleanExtra("createGame", false);
         
@@ -149,6 +156,9 @@ public class GoogleMapsActivity extends AppCompatActivity
         // Создание и настройка чата
         
         etChatBox = (EditText) findViewById(R.id.etChatBox);
+        tvMissedMsg = (TextView) findViewById(R.id.tvMissedMsg);
+        tvMissedMsg.setVisibility(View.INVISIBLE);// чтобы btnExpandChatClick не прыгала
+        // добавляем реакцию на нажатие кнопки отправки сообщения на клавиатуре
         etChatBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -162,13 +172,80 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
         messageList = new ArrayList<>();
-        mMessageAdapter = new MessageListAdapter(this, messageList, myLogin);
+        mMessageAdapter = new MessageListAdapter(this, messageList, myProfile.getName());
         
         mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
         mMessageRecycler.setAdapter(mMessageAdapter);
         
         rlChat = (RelativeLayout) findViewById(R.id.rlChat);
         rlChat.setVisibility(View.GONE);
+        
+        TcpClient.getInstance().startAsync(new TcpConnectionListener() {
+            @Override
+            public void onConnected() {
+                Log.d(TcpClient.SERVER_LOG, "in onConnected.");
+                Toast.makeText(GoogleMapsActivity.this, "connected tcp", Toast.LENGTH_SHORT).show();
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", "connection");
+                    jo.put("login", myProfile.getLogin());
+                    TcpClient.getInstance().sendMessage(jo);
+                } catch (JSONException ignored) {}
+            }
+            
+            @Override
+            public void onConnectionError(String error) {
+                try { // на случай если активти уже закрыта.
+//                    Toast.makeText(GoogleMapsActivity.this, error, Toast.LENGTH_SHORT).show();
+                    showConnectionErrorAlert(error, this);
+                    Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
+    
+                } catch (Exception e) {
+                    Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
+                }
+            }
+        });
+        
+        TcpClient.getInstance().addMessageListener(new TcpMessageListener() {
+            @Override
+            public void onTCPMessageReceived(JSONObject data) {
+                try {
+                    if (data.getString("type").equals("message_chat")) {
+                        addMessageToChat(data.getString("message"), data.getString("name"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    
+    /** Вывести диалоговое окно
+     * @param error Сообщение об ошибке
+     * @param connectionListener Слушатель для переподключения.*/
+    private void showConnectionErrorAlert(String error, final TcpConnectionListener connectionListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
+        String serverIsStopped = TcpClient.getInstance().isTcpRunning() ? "Сервер не остановлен." : "Сервер остановлен.";
+        builder.setTitle("Ошибка работы сервера!\n" + serverIsStopped)
+                .setMessage(error)
+                .setCancelable(false)
+                .setNegativeButton( "Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        })
+                .setPositiveButton("Reconnect", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // если мы не закончили tcp connection, заканчиваем
+                        // потом ещё раз запускаемся заново с тем же листенером.
+                        TcpClient.getInstance().reconnect(connectionListener);
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
     
     @Override
@@ -333,7 +410,12 @@ public class GoogleMapsActivity extends AppCompatActivity
         } catch (JSONException ignored) {}
         TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
             @Override
-            public void onMessageReceived(JSONObject message) {
+            public void onFailure(String error) {
+        
+            }
+    
+            @Override
+            public void onResponse(String message) {
                 startPlayersUpdates();
             }
         });
@@ -495,8 +577,8 @@ public class GoogleMapsActivity extends AppCompatActivity
         if (flag != null) {
             Toast.makeText(GoogleMapsActivity.this, "flag " + flag.number + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
             if (dist < 100 && flag.teamColor == myTeamColor && !flag.activated) {
-                addMessageToChat("I have captured the flag " + flag.number + "!!!", GoogleMapsActivity.this.myLogin);
-                addMessageToChat("Oh no!!", "somePlayer");
+//                addMessageToChat("I have captured the flag " + flag.number + "!!!", GoogleMapsActivity.this.myLogin);
+//                addMessageToChat("Oh no!!", "somePlayer");
                 flag.activate();
                 // перекрашиваем флаг в свой цвет
                 // flag.teamColor = myTeamColor;
@@ -512,8 +594,9 @@ public class GoogleMapsActivity extends AppCompatActivity
     
                 TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
                     @Override
-                    public void onMessageReceived(JSONObject message) {
+                    public void onResponse(String msgStr) {
                         try {
+                            JSONObject message = new JSONObject(msgStr);
                             // если не удалось обновить флажок на сервере
                             if (message.getInt("response") == 0) {
                                 Toast.makeText(GoogleMapsActivity.this, "error: " + message.optString("error"), Toast.LENGTH_SHORT).show();
@@ -522,6 +605,11 @@ public class GoogleMapsActivity extends AppCompatActivity
                                 marker.setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
                             }
                         } catch (JSONException ignored) {}
+                    }
+                    
+                    @Override
+                    public void onFailure(String error) {
+        
                     }
                 });
             }
@@ -552,9 +640,11 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         stopLocationUpdates();
         stopPlayersUpdates();
+        TcpClient.getInstance().stopClient();
+        
+        super.onDestroy();
     }
     
     
@@ -564,16 +654,20 @@ public class GoogleMapsActivity extends AppCompatActivity
         // в градусах
         float rotation = myLocationMarker.getRotation() - 30;
         myLocationMarker.setRotation(rotation);
+        // чтобы при нажатии на кнопку текущего расположения сразу поворачиалось
+        myLastLocation.setBearing(rotation);
         if (fakeGps != null) {
-            fakeGps.setBearing(rotation);
+            fakeGps.setBearing(rotation);// куда будем двигаться
         }
     }
     public void btnTurnRightClick(View v) {
         // в градусах
         float rotation = myLocationMarker.getRotation() + 30;
         myLocationMarker.setRotation(rotation);
+        // чтобы при нажатии на кнопку текущего расположения сразу поворачиалось
+        myLastLocation.setBearing(rotation);
         if (fakeGps != null) {
-            fakeGps.setBearing(rotation);
+            fakeGps.setBearing(rotation);// куда будем двигаться
         }
     }
     
@@ -582,28 +676,62 @@ public class GoogleMapsActivity extends AppCompatActivity
         if (etChatBox.getText().toString().equals(""))
             return;
         
-        addMessageToChat(etChatBox.getText().toString(), myLogin);
+        try {
+        JSONObject jo = new JSONObject();
+            jo.put("type", "message_chat");
+            jo.put("name", myProfile.getName());
+            jo.put("message", etChatBox.getText().toString());
+            
+        TcpClient.getInstance().sendMessage(jo);
+            
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        
+        // напишется в ответе сервера
+//        addMessageToChat(etChatBox.getText().toString(), myLogin);
         etChatBox.setText("");
     }
     
-    private void addMessageToChat(String message, String login) {
-        messageList.add(new UserMessage(message, login));
-        mMessageAdapter.notifyDataSetChanged();
+    private void addMessageToChat(String message, String name) {
+        messageList.add(new UserMessage(message, name));
+        mMessageAdapter.notifyItemInserted(messageList.size() - 1);
         mMessageRecycler.scrollToPosition(messageList.size() - 1);
+    
+        // если сообщения скрыты
+        if (rlChat.getVisibility() == View.GONE) {
+            missedMsgCount++;
+            // показать количество непрочитанных сообщений
+            tvMissedMsg.setText("+" + missedMsgCount);
+            if (tvMissedMsg.getVisibility() == View.INVISIBLE)
+                tvMissedMsg.setVisibility(View.VISIBLE);
+            
+            // анимация тряски
+            tvMissedMsg.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake));
+        }
 //        mMessageAdapter.notifyItemInserted(messageList.size() - 1);
     }
     
     
     public void btnExpandChatClick(View v) {
         Button b = (Button) v;
-        if (rlChat.getVisibility() == View.VISIBLE) {
+        if (rlChat.getVisibility() == View.VISIBLE) {// скрыть 
             rlChat.setVisibility(View.GONE);
             b.setText("show chat");
             b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_more_black_24dp, 0);
-        } else {
+            
+            // сброс пропущенных сообщений
+            missedMsgCount = 0;
+            // не показываем значок до первого пропущенного сообщения
+//            tvMissedMsg.setText("");
+//            tvMissedMsg.setVisibility(View.VISIBLE);
+            
+        } else {// показать
             rlChat.setVisibility(View.VISIBLE);
             b.setText("hide chat");
             b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_less_black_24dp, 0);
+            
+            tvMissedMsg.setVisibility(View.INVISIBLE);
         }
     }
     
@@ -634,8 +762,9 @@ public class GoogleMapsActivity extends AppCompatActivity
             // отправляем запрос на получение данных игроков
             TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
                 @Override
-                public void onMessageReceived(JSONObject message) {
+                public void onResponse(String msgStr) {
                     try {
+                    JSONObject message = new JSONObject(msgStr);
                         // обновляем игроков
                         JSONArray ja = message.getJSONArray("players");
                         for (int i = 0; i < ja.length(); i++) {
@@ -682,6 +811,11 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
                 }
+    
+                @Override
+                public void onFailure(String error) {
+        
+                }
             });
         }
     };
@@ -719,8 +853,6 @@ public class GoogleMapsActivity extends AppCompatActivity
                 markerAnimator.start();
             }
         }
-        
-        ;
     };
     
 }

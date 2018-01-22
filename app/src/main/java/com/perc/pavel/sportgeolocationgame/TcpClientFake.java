@@ -32,17 +32,16 @@ class TcpClientFake {
     private final int OTHER_PLAYERS_COUNT = 4;
     private Random rnd = new Random();
     
+    private TcpMessageListener tcpMessageListener = null;
     
-    private TcpListener tcpListener = null;
-
     /**
      * Запустить Сервер в tcp режиме.
      * @param messageListener Интерфейс общения с сервером. (Вызывается в основном потоке через Handler.post)
      */
-    void startAsync(TcpListener messageListener) {
-        tcpListener = messageListener;
-//        tcpListener.onTCPConnectionStatusChanged(true);
-        tcpListener.onConnected();
+    void startAsync(TcpMessageListener messageListener, TcpConnectionListener connectionListener) {
+//        tcpConnectionListener.onTCPConnectionStatusChanged(true);
+        connectionListener.onConnected();
+        tcpMessageListener = messageListener;
     }
 
     /**
@@ -51,7 +50,7 @@ class TcpClientFake {
      */
     void sendMessage(final JSONObject message) {
         final Handler handler = new Handler();
-        if (tcpListener != null){
+        if (tcpMessageListener != null){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -65,14 +64,14 @@ class TcpClientFake {
                     boolean result = handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            tcpListener.onTCPMessageReceived(answer);
+                            tcpMessageListener.onTCPMessageReceived(answer);
                         }
                     });
                     
 //                    activity.runOnUiThread(new Runnable() {
 //                        @Override
 //                        public void run() {
-//                            tcpListener.onTCPMessageReceived(answer);
+//                            tcpConnectionListener.onTCPMessageReceived(answer);
 //                        }
 //                    });
                 }
@@ -189,9 +188,8 @@ class TcpClientFake {
      * Остановка tcp соединения.
      */
     void stopClient() {
-//        tcpListener.onTCPConnectionStatusChanged(false);
-        tcpListener.onDisconnected();
-        tcpListener = null;
+//        tcpConnectionListener.onTCPConnectionStatusChanged(false);
+        tcpMessageListener = null;
     }
 
     /**
@@ -217,7 +215,7 @@ class TcpClientFake {
                 boolean result = handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        onResult.onMessageReceived(answer);
+                        onResult.onResponse(answer.toString());
                     }
                 });
 
@@ -225,7 +223,7 @@ class TcpClientFake {
 //                activity.runOnUiThread(new Runnable() {
 //                    @Override
 //                    public void run() {
-//                        onResult.onMessageReceived(answer);
+//                        onResult.onResponse(answer);
 //                    }
 //                });
             }
