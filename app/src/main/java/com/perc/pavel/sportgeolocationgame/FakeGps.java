@@ -5,6 +5,7 @@ import android.os.Handler;
 
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
@@ -21,11 +22,12 @@ import java.util.ArrayList;
 
 public class FakeGps implements Runnable {
     
-    private static final double STEP = 0.00018;
+    private double STEP = 0.00018;
     /**
      * задержка в миллисекундах
      */
-    private static final int DELAY = 1500;
+    private int DELAY = 1500;
+    
     
     double lat;
     double lng;
@@ -48,6 +50,12 @@ public class FakeGps implements Runnable {
         sendLocation();
     }
     
+    void setSuperSpeed(boolean superSpeed) {
+        if (superSpeed) {
+            DELAY = 500;
+        } else {
+            DELAY = 1500;        }
+    }
     
     void start() {
         handler.removeCallbacks(this);
@@ -89,5 +97,29 @@ public class FakeGps implements Runnable {
         sendLocation();
         
         handler.postDelayed(this, DELAY);
+    }
+    
+    /**
+     * @param latLng 
+     * @param bearing degrees
+     * @param distance meters
+     * @return
+     */
+    static LatLng getNextCoord(LatLng latLng, int bearing, int distance) {
+        double R = 6378100; // Radius of the Earth
+        double brng = Math.toRadians(bearing); // Bearing in radians.
+        
+        double lat1 = Math.toRadians(latLng.latitude); // Current lat point converted to radians
+        double lon1 = Math.toRadians(latLng.longitude); // Current long point converted to radians
+            
+        double lat2 = Math.asin( Math.sin(lat1)*Math.cos(distance/R) +
+                Math.cos(lat1)*Math.sin(distance/R)*Math.cos(brng));
+    
+        double lon2 = lon1 + Math.atan2(Math.sin(brng)*Math.sin(distance/R)*Math.cos(lat1),
+                Math.cos(distance/R)-Math.sin(lat1)*Math.sin(lat2));
+    
+        lat2 = Math.toDegrees(lat2);
+        lon2 = Math.toDegrees(lon2);
+        return new LatLng(lat2, lon2);
     }
 }

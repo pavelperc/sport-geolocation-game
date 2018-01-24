@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/bottom_sheet"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@android:color/darker_gray"
+              android:orientation="vertical"
+              android:weightSum="1"
+              app:behavior_hideable="true"
+              app:behavior_peekHeight="70dp"
+              app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/ic_expand_less_black_24dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="right"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnGenerateFlags"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="Сгенерировать флажки"/>
+
+            <Button
+                android:id="@+id/btnStartGame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:enabled="false"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="Начать игру"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Размер круга:"
+                />
+
+            <TextView
+                android:id="@+id/tvCircleSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="100"
+                android:textAppearance="@style/TextAppearance.AppCompat"/>
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/sbCircleSize"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:max="4"
+            android:progress="0"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="Количество флажков:"
+                />
+
+            <TextView
+                android:id="@+id/tvFlagsCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="30"
+                android:textAppearance="@style/TextAppearance.AppCompat"/>
+
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/sbFlagsCount"
+            style="@android:style/Widget.DeviceDefault.Light.SeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:max="300"
+            android:progress="30"/>
+
+    </LinearLayout>
+
+</LinearLayout>

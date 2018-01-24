@@ -206,5 +206,8 @@ public class EnterActivity extends AppCompatActivity {
     }
     
     public void btnVkRegisterClick(View v) {
+        Intent intent = new Intent(EnterActivity.this, StartGameActivity.class);
+        intent.putExtra("profile", new Profile("name", "login", "password"));
+        startActivity(intent);
     }
 }

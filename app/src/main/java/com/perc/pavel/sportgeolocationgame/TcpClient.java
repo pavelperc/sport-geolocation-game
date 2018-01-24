@@ -42,9 +42,9 @@ class TcpClient {
     //    private static final int SERVER_PORT_TCP = 7071;
     static final int SERVER_PORT_HTTP = 5050;
     private volatile boolean isTcpRunning = false;
-    private volatile boolean isTryingToStop = false;
+    private boolean isTryingToStop = false;
     
-    public boolean isTcpRunning() {
+    boolean isTcpRunning() {
         return isTcpRunning;
     }
     
@@ -100,7 +100,8 @@ class TcpClient {
     }
     
     /**
-     * Отключиться от сервера.
+     * Отключает от сервера. Закрывает все in/out потоки, 
+     * ждёт пока поток слушания сообщения завершится, если он не завершён.
      */
     void stopClient() {
         // ставим флаг, чтобы из исключения, выпавшего в потоке слушателя сервера не вызвалось onConnectionError
@@ -121,6 +122,15 @@ class TcpClient {
                 Log.d(SERVER_LOG, "error in closing mBufferIn");
             }
         }
+        try {// ждём пока завершится процесс, если он не завершён
+            backgroundTcpThread.join();
+        } catch (InterruptedException e) {
+            Log.d(SERVER_LOG, "in stopClient: interrupted exception");
+        }
+        
+        // убираем флаг
+        isTryingToStop = false;
+        
         mBufferIn = null;
         mBufferOut = null;
     }
@@ -131,15 +141,13 @@ class TcpClient {
      * @param connectionListener Слушатель подключения для повторного старта.
      */
     void reconnect(TcpConnectionListener connectionListener) {
+        Log.d(SERVER_LOG, "in reconnect");
         if (isTcpRunning) {
-            stopClient();
-            try {// ждём пока завершится процесс
-                backgroundTcpThread.join();
-            } catch (InterruptedException e) {
-            }
-            
-            startAsync(connectionListener);
+            Log.d(SERVER_LOG, "in reconnect: trying to close close socket");
+            stopClient();// метод сам ждёт пока поток завершится
         }
+        
+        startAsync(connectionListener);
     }
     
     /**
@@ -148,12 +156,12 @@ class TcpClient {
      * @param tcpConnectionListener Интерфейс для получения состояния о подключении
      */
     void startAsync(final TcpConnectionListener tcpConnectionListener) {
-        
-        if (isTcpRunning) {
-//            tcpConnectionListener.onConnectionError("SERVER IS RUNNING");
-            Log.d(SERVER_LOG, "TRIED TO START AGAIN ALREADY RUNNING SERVER LISTENER");
-            return;
-        }
+        Log.d(SERVER_LOG, "in startAsync: isTcpRunning = " + isTcpRunning + "; isTryingToStop = " + isTryingToStop);
+//        if (isTcpRunning) {
+////            tcpConnectionListener.onConnectionError("SERVER IS RUNNING");
+//            Log.d(SERVER_LOG, "TRIED TO START AGAIN ALREADY RUNNING SERVER LISTENER");
+//            return;
+//        }
         
         final Handler handler = new Handler();
         
@@ -205,7 +213,7 @@ class TcpClient {
                                         }
                                     }
                                 } catch (final JSONException e) {// нам прислали неверный json
-                                    tcpConnectionListener.onConnectionError(e.getMessage());
+                                    tcpConnectionListener.onConnectionError("JSONException: " + e.getMessage());
                                 }
                             }
                         });
@@ -214,7 +222,7 @@ class TcpClient {
                     }// end of loop
                 } catch (final IOException e) {// когда не достучались до сервера или закрыли выходной поток
                     Log.d(SERVER_LOG, "IOException: " + e.getMessage() + " in---> " + Arrays.toString(e.getStackTrace()));
-                    
+                    isTcpRunning = false;// пишем, что сервер отключён до вывода alertDialog
                     // если мы попали сюда из за закрытия mBufferIn в stopClient - не отправляем onConnectionError.
                     if (!isTryingToStop) {
                         handler.post(new Runnable() {
@@ -226,6 +234,7 @@ class TcpClient {
                     }
                 } catch (final Exception e) {
                     Log.d(SERVER_LOG, "Another Exception: " + e.getMessage());
+                    isTcpRunning = false;// пишем, что сервер отключён до вывода alertDialog
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -233,15 +242,14 @@ class TcpClient {
                         }
                     });
                 }
-                
                 // выход из цикла и закрытие сокета.
-                Log.d(SERVER_LOG, "Closed socket thread");
+                
                 isTcpRunning = false;
-                isTryingToStop = false;
+                Log.d(SERVER_LOG, "Closed socket thread. isTryingToStop = " + isTryingToStop);
+    
             }
         });
         backgroundTcpThread.start();
-        
     }
     
     /**
