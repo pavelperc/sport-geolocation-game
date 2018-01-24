@@ -41,13 +41,20 @@ public class BottomSheetHandler {
         
         // настройка поведения нижнего экрана
         bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
-        
+        // максимальный подъём relative layout. при скрытом bottom sheet - -8dp изз -за тени на b. sh.
+        final int shadowHeight = convertDpToPixels(8);
+        final int maxMarginPx = bottomSheetBehavior.getPeekHeight() - shadowHeight;
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN && keepNotHidden) {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    
+                }
+                // если мы слишком быстро крутили вверх и окно не успело продвинуться
+                else if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_COLLAPSED){
+                    CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) rlMainScreen.getLayoutParams();
+                    params.bottomMargin = maxMarginPx;
+                    rlMainScreen.setLayoutParams(params);
                 }
             }
             
@@ -57,8 +64,7 @@ public class BottomSheetHandler {
                 // при движении из hidden в collapsed анимируем bottomMargin у основного layout-а
                 if (slideOffset < 0) {
                     CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) rlMainScreen.getLayoutParams();
-                    int maxMargin = convertDpToPixels(70);
-                    params.bottomMargin = (int) (maxMargin + slideOffset * maxMargin);
+                    params.bottomMargin = (int) (maxMarginPx + slideOffset * (maxMarginPx + shadowHeight));
                     rlMainScreen.setLayoutParams(params);
                 }
             }
