@@ -44,7 +44,7 @@ class TcpClient {
     
     static final String SERVER_IP = "92.63.105.60"; //server IP address
     //    private static final int SERVER_PORT_TCP = 7071;
-    static final int SERVER_PORT_HTTP = 7070;
+    static final int SERVER_PORT_HTTP = 6060;
     private volatile boolean isTcpRunning = false;
     private boolean isTryingToStop = false;
     
