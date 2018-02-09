@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputType;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -18,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import okhttp3.HttpUrl;
-import okhttp3.Request;
 
 /**
  * Регистрация
@@ -74,20 +71,21 @@ public class RegisterActivity extends AppCompatActivity {
         
         
         pbLoading.setVisibility(View.VISIBLE);
-    
-        HttpUrl url = TcpClient.getUrlBuilder()
-                .addPathSegment("registration")
-                .addQueryParameter("login", login)
-                .addQueryParameter("name", name)
-                .addQueryParameter("password", password)
-                .build();
-        TcpClient.getInstance().httpGetRequest(url, new HttpListener() {
+        
+        
+        JSONObject json = new JSONObject();
+        try {
+            json.put("login", login);
+            json.put("password", password);
+            json.put("name", name);
+        } catch (JSONException ignored) {}
+        
+        TcpClient.getInstance().httpPostRequest("registration", json, new HttpListener() {
             @Override
-            public void onResponse(String message) {
+            public void onResponse(JSONObject message) {
                 pbLoading.setVisibility(View.GONE);
                 try {
-                    JSONObject jMessage = new JSONObject(message);
-                    if (jMessage.getBoolean("status")) {// если регистрация успешна
+                    if (message.getBoolean("status")) {// если регистрация успешна
                         // Сохранение последних данных
                         SharedPreferences pref = getSharedPreferences("Settings", MODE_PRIVATE);
                         SharedPreferences.Editor editor = pref.edit();
@@ -101,7 +99,7 @@ public class RegisterActivity extends AppCompatActivity {
                         Toast.makeText(RegisterActivity.this, "Регистрация успешна.", Toast.LENGTH_SHORT).show();
                         RegisterActivity.this.finish();
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Ошибка регистрации:\n" + jMessage.getString("error"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Ошибка регистрации:\n" + message.getString("error"), Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException ignored){}
             }

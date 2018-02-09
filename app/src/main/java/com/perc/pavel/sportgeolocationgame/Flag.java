@@ -2,6 +2,8 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.graphics.Color;
 
+import com.google.android.gms.maps.model.Marker;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,6 +21,7 @@ public class Flag {
     
     boolean activated;
     
+    private Marker marker;
     
     public void activate() {
         activated = true;
@@ -36,12 +39,12 @@ public class Flag {
         activated = false;
     }
     
-    public Flag(JSONObject flag) throws JSONException {
-        lat = flag.getDouble("lat");
-        lng = flag.getDouble("lng");
-        teamColor = flag.getInt("teamColor");
-        number = flag.getInt("number");
-        activated = flag.getBoolean("activated");
+    public Flag(JSONObject jo) throws JSONException {
+        lat = jo.getDouble("lat");
+        lng = jo.getDouble("lng");
+        teamColor = jo.getInt("teamColor");
+        number = jo.getInt("number");
+        activated = jo.getBoolean("activated");
     }
     
     public JSONObject getJson() {
@@ -72,4 +75,20 @@ public class Flag {
     public String toString() {
         return String.format("flag %d: (%f,%f)", number, lat, lng);
     }
+    
+    
+    Marker getMarker() {
+        if (marker == null)
+            throw new NullPointerException("Tried to get null marker in " + toString());
+        return marker;
+    }
+    
+    void setMarker(Marker marker) {
+        this.marker = marker;
+    }
+    
+    boolean hasMarker() {
+        return marker != null;
+    }
+    
 }

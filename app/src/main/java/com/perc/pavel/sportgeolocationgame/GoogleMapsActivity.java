@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -67,14 +66,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class GoogleMapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
-    private static final int FLAGS_NUMBER = 30;
+        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, TcpMessageListener {
     
     /** Профиль текущего игрока.*/
     Profile myProfile;
@@ -87,19 +88,19 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     private FakeGps fakeGps;
     
-    private Map<String, Player> playersMap = new HashMap<>();
-    private Map<String, Marker> playerMarkersMap = new HashMap<>();
+    Map<String, Player> playersMap = new HashMap<>();
+    List<Player> players = new ArrayList<>();  
     
-    
-    private ArrayList<Flag> flags = new ArrayList<>();
-    private ArrayList<Marker> flagMarkers = new ArrayList<>();
-    ArrayList<Integer> teamColors = new ArrayList<>();
+    /** Объекты флажков по их номеру*/
+    Map<Integer, Flag> flags = new HashMap<>();
     private Map<Marker, Flag> markerToFlagMap = new HashMap<>();
+    
+    ArrayList<Integer> teamColors = new ArrayList<>();
     Circle circle;
     
     private BottomSheetHandler bottomSheetHandler;
     
-    private int myTeamColor;
+    private int myTeamColor = Player.NO_TEAM_COLOR;
     private Marker myLocationMarker;
     
     /** Последнее местоположение.*/
@@ -125,7 +126,12 @@ public class GoogleMapsActivity extends AppCompatActivity
     private EditText etChatBox;
     private RelativeLayout rlChat;
     private TextView tvMissedMsg;
+    TextView tvRoomId;
     private int missedMsgCount = 0;
+    
+    
+    PlayerListAdapter myTeammatesAdapter;
+    List<Player> myTeammates;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,16 +142,46 @@ public class GoogleMapsActivity extends AppCompatActivity
         // Загружаем в оперативную память значок флажка
         whiteFlagBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.white_flag);
         
-        myProfile = (Profile) getIntent().getSerializableExtra("profile");
-        // получаем цвета команд и свой цвет
-        teamColors = (ArrayList<Integer>) getIntent().getSerializableExtra("teamColors");
-        myTeamColor = getIntent().getIntExtra("myTeamColor", teamColors.get(0));
         
+        // полуаем параметры из intent-а
+        
+        myProfile = (Profile) getIntent().getSerializableExtra("profile");
+        teamColors = (ArrayList<Integer>) getIntent().getSerializableExtra("teamColors");
 //        myName = getIntent().getStringExtra("name");
         roomId = getIntent().getIntExtra("roomId", -1);
         createGame = getIntent().getBooleanExtra("createGame", false);
-    
-    
+        
+        if (createGame) {
+            myTeamColor = teamColors.get(0);
+        }
+        tvRoomId = (TextView) findViewById(R.id.tvRoomId);
+        if (createGame) {
+            tvRoomId.setText("ROOM_ID: " + roomId);
+            tvRoomId.setVisibility(View.VISIBLE);
+        }
+        
+        
+        // Создание справа списка с моими сокомандниками
+        myTeammates = new ArrayList<>();
+        
+        RecyclerView rvTeammates = (RecyclerView) findViewById(R.id.rvTeammates);
+        rvTeammates.setLayoutManager(new LinearLayoutManager(this));
+        
+        myTeammatesAdapter = new PlayerListAdapter(this, myTeammates);
+        rvTeammates.setAdapter(myTeammatesAdapter);
+        
+        myTeammates.add(new Player("my_cat", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_dog", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_parrot", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_cow", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_hen", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_pig", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_horse", 10, 10, myTeamColor));
+        myTeammates.add(new Player("my_sheep", 10, 10, myTeamColor));
+        myTeammatesAdapter.notifyDataSetChanged();
+        
+        
+        
         // создание выдвигающегося экрана снизу
         bottomSheetHandler = new BottomSheetHandler(this);
     
@@ -226,18 +262,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             }
         });
         
-        TcpClient.getInstance().addMessageListener(new TcpMessageListener() {
-            @Override
-            public void onTCPMessageReceived(JSONObject data) {
-                try {
-                    if (data.getString("type").equals("message_chat")) {
-                        addMessageToChat(data.getString("message"), data.getString("name"));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        TcpClient.getInstance().addMessageListener(this);
     }
     
     /**
@@ -263,7 +288,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         // если мы не закончили tcp connection, заканчиваем
                         // потом ещё раз запускаемся заново с тем же листенером.
-                        TcpClient.getInstance().reconnect(connectionListener);
+                        if (connectionListener != null)
+                            TcpClient.getInstance().reconnect(connectionListener);
                         dialog.cancel();
                     }
                 });
@@ -278,7 +304,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         googleMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.purple_map_style));
-        
+            
         googleMap.getUiSettings().setCompassEnabled(false);
         //googleMap.setBuildingsEnabled(false);
         
@@ -365,14 +391,6 @@ public class GoogleMapsActivity extends AppCompatActivity
         markerToFlagMap.clear();
         flags.clear();
         
-        
-        // Создаём маркеры флажков
-//        double lat = myLastLocation.getLatitude();
-//        double lng = myLastLocation.getLongitude();
-////        double delta = 0.01;// В градусах
-//        double delta = 0.00018 * radius;// В градусах
-        
-        
         for (int i = 0; i < flagsNumber; i++) {
             
 //            LatLng ll = new LatLng(lat + rnd.nextDouble() * delta - delta / 2, lng + rnd.nextDouble() * delta - delta / 2);
@@ -382,18 +400,23 @@ public class GoogleMapsActivity extends AppCompatActivity
             int color = teamColors.get(i % teamColors.size());
             Flag flag = new Flag(llNew.latitude, llNew.longitude, color, i);
             
-            
-            flags.add(flag);
-            Marker fm = googleMap.addMarker(new MarkerOptions()
-                    .position(llNew)
-                    .anchor(8f / 48f, 1f)
-                    .zIndex(2)
-                    .icon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation())));
-            fm.setTag("flag");
-            markerToFlagMap.put(fm, flag);
+            flags.put(flag.number, flag);
+            createFlagMarker(flag);
         }
     
     
+    }
+    
+    /** Создаёт объект маркера и добавляет его к флажку и в markerToFlagMap.*/
+    private void createFlagMarker(Flag flag) {
+        Marker fm = googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(flag.lat, flag.lng))
+                .anchor(8f / 48f, 1f)
+                .zIndex(2)
+                .icon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation())));
+        fm.setTag("flag");
+        flag.setMarker(fm);
+        markerToFlagMap.put(fm, flag);
     }
     
     
@@ -402,7 +425,7 @@ public class GoogleMapsActivity extends AppCompatActivity
      * Содержит старт и настройку новой игры, создание флажков и команд
      */
     private void onFirstLocationUpdate() {
-        
+        Log.d("my_tag", "in onFirstLocationUpdate");
         // Создаём маркер игрока
         myLocationMarker = googleMap.addMarker(new MarkerOptions()
                 .position(locToLL(myLastLocation))
@@ -454,57 +477,72 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         // запрос на начало игры
         
-        JSONObject jo = new JSONObject();
-        try {
-            jo.put("type", "startGame");
-            jo.put("lat", myLastLocation.getLatitude());
-            jo.put("lng", myLastLocation.getLongitude());
-            
-            JSONObject setup = new JSONObject();
-            setup.put("teamColors", new JSONArray(teamColors));
-            
-            JSONArray jFlags = new JSONArray();
-            for (Flag flag : flags) {
-                jFlags.put(flag.getJson());
-            }
-            setup.put("flags", jFlags);
-            
-            jo.put("setupGameInfo", setup);
-            
-        } catch (JSONException ignored) {
-        }
-        TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-            @Override
-            public void onFailure(String error) {
-                
-            }
-            
-            @Override
-            public void onResponse(String message) {
-                startPlayersUpdates();
-            }
-        });
+//        JSONObject jo = new JSONObject();
+//        try {
+//            jo.put("type", "startGame");
+//            jo.put("lat", myLastLocation.getLatitude());
+//            jo.put("lng", myLastLocation.getLongitude());
+//            
+//            JSONObject setup = new JSONObject();
+//            setup.put("teamColors", new JSONArray(teamColors));
+//            
+//            JSONArray jFlags = new JSONArray();
+//            for (Flag flag : flags.values()) {
+//                jFlags.put(flag.getJson());
+//            }
+//            setup.put("flags", jFlags);
+//            
+//            jo.put("setupGameInfo", setup);
+//            
+//        } catch (JSONException ignored) {
+//        }
+//        TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
+//            @Override
+//            public void onFailure(String error) {
+//                
+//            }
+//            
+//            @Override
+//            public void onResponse(JSONObject message) {
+//                startPlayersUpdates();
+//            }
+//        });
+        
+        startPlayersUpdates();
     }
     
     private void startPlayersUpdates() {
-        updatePlayersRunnable.run();
+        Log.d("my_tag", "in startPlayersUpdates");
+        TcpClientFake.getInstance().startAsync(this, new TcpConnectionListener() {
+            @Override
+            public void onConnected() {
+        
+            }
+    
+            @Override
+            public void onConnectionError(String error) {
+        
+            }
+        }, teamColors, locToLL(myLastLocation));
+//        updatePlayersRunnable.run();
     }
     
     private void stopPlayersUpdates() {
-        updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
-        Log.d("my_tag", "players update stopped");
+//        updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
+//        Log.d("my_tag", "players update stopped");
+        TcpClientFake.getInstance().stopClient();
     }
     
-    private void addPlayerMarker(Player player) {
+    private void createPlayerMarker(Player player) {
         Marker marker = googleMap.addMarker(new MarkerOptions()
-                .position(locToLL(myLastLocation))
+                .position(player.getCoords())
                 .anchor(0.5f, 0.5f)
                 .icon(getColoredImage(R.drawable.white_arrow, player.teamColor))
-                .title(player.name)
+                .title(player.login)
                 .zIndex(0)
                 .flat(true));
         marker.setTag("player");
-        playerMarkersMap.put(player.name, marker);
+        player.setMarker(marker);
     }
     
     /**
@@ -516,7 +554,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     private void updatePlayerMarker(Marker marker, Player p) {
         // Сами вычисляем направление игрока
         Location oldPos = llToLoc(marker.getPosition());
-        Location newPos = llToLoc(new LatLng(p.lat, p.lng));
+        Location newPos = llToLoc(p.getCoords());
         float newBearing = oldPos.bearingTo(newPos);
         
         // Поворот маркера
@@ -711,9 +749,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                 
                 TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
                     @Override
-                    public void onResponse(String msgStr) {
+                    public void onResponse(JSONObject message) {
                         try {
-                            JSONObject message = new JSONObject(msgStr);
                             // если не удалось обновить флажок на сервере
                             if (message.getInt("response") == 0) {
                                 Toast.makeText(GoogleMapsActivity.this, "error: " + message.optString("error"), Toast.LENGTH_SHORT).show();
@@ -735,6 +772,124 @@ public class GoogleMapsActivity extends AppCompatActivity
             Toast.makeText(GoogleMapsActivity.this, "unknown flag", Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+    
+    @Override
+    public void onTCPMessageReceived(JSONObject jo) {
+        try {
+            Log.d("my_tag", "tcp received: " + jo.toString());
+            switch (jo.getString("type")) {
+                case "message_chat":
+                    addMessageToChat(jo.getString("message"), jo.getString("name"));
+                    break;
+                case "new_player_in_room":
+                    Player p = new Player(jo);
+                    addPlayer(p);
+                    
+                    
+                    if (p.hasCoords()) {
+                        // обновление маркера
+                        if (p.hasMarker()) {
+                            updatePlayerMarker(p.getMarker(), p);
+                        } else {
+                            createPlayerMarker(p);
+                        }
+                    }
+                    
+                    break;
+                case "start_game":
+                    // если мы не создавали игру и не генерировали флажки - создаём их
+                    if (!createGame) {
+                        // удаляем все старые флажки
+                        for (Marker marker : markerToFlagMap.keySet()) {
+                            marker.remove();
+                        }
+                        markerToFlagMap.clear();
+                        flags.clear();
+                        
+                        JSONArray ja = jo.getJSONArray("flags");
+                        for (int i = 0; i < ja.length(); i++) {
+                            Flag flag = new Flag(ja.getJSONObject(i));
+                            flags.put(flag.number, flag);
+                            createFlagMarker(flag);
+                        }
+                        
+                        // закрываем bottom_sheet
+                        
+                        bottomSheetHandler.hide();
+                    }
+                    
+                    Toast.makeText(this, "GAME STARTED!!!", Toast.LENGTH_SHORT).show();
+                    break;
+                case "cords":
+                    String login = jo.getString("login");
+                    // если отослали не мы
+                    if (!login.equals(myProfile.getLogin())) {
+    
+                        Player pl;
+                        // если такой игрок присутствует
+                        if (playersMap.containsKey(login)) {
+                            pl = playersMap.get(login);
+                            pl.setCoords(jo.getDouble("lat"), jo.getDouble("lng"));
+                        }
+                        else {// прислался неизвестный игрок
+                            // UNREACHABLE
+                            Log.d("my_tag", "IN UNREACHABLE");
+                            pl = new Player(jo);
+                            addPlayer(pl);
+                        }
+                        
+                        // обновление маркера
+                        if (pl.hasMarker()) {
+                            updatePlayerMarker(pl.getMarker(), pl);
+                        } else {
+                            createPlayerMarker(pl);
+                        }
+                    }
+                    break;
+                case "choose_team":
+                    try {
+                        Player pll = playersMap.get(jo.getString("login"));
+                        pll.setTeamColor(jo.getInt("team_color"));
+                        updatePlayers();
+                        pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
+                    } catch(Exception e){
+                        Log.d("my_tag", "choose_team ERROR: login = " + jo.getString("login") + " playersMap = :" + playersMap);
+                    }
+                    break;
+                default:
+                    Toast.makeText(GoogleMapsActivity.this, "TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
+            }
+            
+        
+        } catch (JSONException e) {
+            Toast.makeText(this, "JSONException:\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /** Добавляем в players и обновляем все списки. Маркеры не обновляются!*/
+    private void addPlayer(Player p) {
+        players.add(p);
+        playersMap.put(p.login, p);
+        Log.d("my_tag", "put player in map: " + p.login);
+        
+        updatePlayers();
+    }
+    
+    /** обновляем все списки в bottomSheet. Маркеры не обновляются!*/
+    private void updatePlayers() {
+        Collections.sort(players, new Comparator<Player>() {
+            @Override
+            public int compare(Player o1, Player o2) {
+                int t = Integer.compare(o1.teamColor, o2.teamColor);
+                if (t == 0) {
+                    t = o1.name.compareTo(o2.name);
+                }
+                return t;
+            }
+        });
+        
+        bottomSheetHandler.teamSharingAdapter.notifyDataSetChanged();
     }
     
     
@@ -855,87 +1010,69 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     //------------------ПЕРЕМЕННЫЕ С РЕАЛИЗОВАННЫМИ ИНТЕРФЕЙСАМИ------------------
     
-    /**
-     * Циклическое обновление состояния игроков
-     */
-    private final Runnable updatePlayersRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Log.d("my_tag", "in updatePLayersRunnable");
-            // собираем свои данные
-            JSONObject jo = new JSONObject();
-            try {
-                jo.put("type", "getPlayerLocations");
-                jo.put("lat", myLastLocation.getLatitude());
-                jo.put("lng", myLastLocation.getLongitude());
-
-//                // собираем флаги
-//                JSONArray jFlags = new JSONArray();
-//                for (Flag flag : flags) {
-//                    jFlags.put(flag.getJson());
+//    /**
+//     * Циклическое обновление состояния игроков
+//     */
+//    private final Runnable updatePlayersRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//            Log.d("my_tag", "in updatePLayersRunnable");
+//            // собираем свои данные
+//            JSONObject jo = new JSONObject();
+//            try {
+//                jo.put("type", "getPlayerLocations");
+//                jo.put("lat", myLastLocation.getLatitude());
+//                jo.put("lng", myLastLocation.getLongitude());
+//
+////                // собираем флаги
+////                JSONArray jFlags = new JSONArray();
+////                for (Flag flag : flags) {
+////                    jFlags.put(flag.getJson());
+////                }
+////                jo.put("flags", jFlags);
+//                
+//            } catch (JSONException ignored) {
+//            }
+//            // отправляем запрос на получение данных игроков
+//            TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
+//                @Override
+//                public void onResponse(JSONObject message) {
+//                    try {
+//                        // обновляем игроков
+//                        JSONArray ja = message.getJSONArray("players");
+//                        for (int i = 0; i < ja.length(); i++) {
+//                            JSONObject jo = ja.getJSONObject(i);
+//                            
+//                            // создаём новый объект пользователя по json
+//                            Player p = new Player(jo);
+//                            Log.d("my_tag", "player received: " + p);
+//                            
+//                            playersMap.put(p.login, p);
+//                            // Если этот пользователь есть на карте - анимируем его положение. Иначе - добавляем
+//                            if (playerMarkersMap.containsKey(jo.getString("name"))) {
+//                                updatePlayerMarker(playerMarkersMap.get(p.login), p);
+//                            } else {
+//                                createPlayerMarker(p);
+//                            }
+//                        }
+//                        
+//                        
+//                    } catch (JSONException ignored) {
+//                    }
+//                    
+//                    // ПОЧЕМУ БЕЗ ЭТОГО ВСЁ ВИСНЕТ?????????? (наверное потому что это было в цикле...)
+//                    updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
+//                    
+//                    updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
 //                }
-//                jo.put("flags", jFlags);
-                
-            } catch (JSONException ignored) {
-            }
-            // отправляем запрос на получение данных игроков
-            TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-                @Override
-                public void onResponse(String msgStr) {
-                    try {
-                        JSONObject message = new JSONObject(msgStr);
-                        // обновляем игроков
-                        JSONArray ja = message.getJSONArray("players");
-                        for (int i = 0; i < ja.length(); i++) {
-                            JSONObject jo = ja.getJSONObject(i);
-                            
-                            // создаём новый объект пользователя по json
-                            Player p = new Player(jo);
-                            Log.d("my_tag", "player received: " + p);
-                            
-                            playersMap.put(p.name, p);
-                            // Если этот пользователь есть на карте - анимируем его положение. Иначе - добавляем
-                            if (playerMarkersMap.containsKey(jo.getString("name"))) {
-                                updatePlayerMarker(playerMarkersMap.get(p.name), p);
-                            } else {
-                                addPlayerMarker(p);
-                            }
-                        }
-                        
-                        // обновляем флажки (присланы только изменённые)
-                        JSONArray jFlags = message.getJSONArray("flags");
-                        for (int i = 0; i < jFlags.length(); i++) {
-                            JSONObject jo = jFlags.getJSONObject(i);
-                            
-                            // создаём новый объект пользователя по json
-                            Flag flag = new Flag(jo);
-                            Log.d("my_tag", "flag received: " + flag);
-                            
-                            
-                            // Если флажок есть на карте (и в массиве флажков)
-                            if (flagMarkers.size() > flag.number) {
-                                flags.set(flag.number, flag);
-                                flagMarkers.get(flag.number).setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
-                            }
-                        }
-                        
-                        
-                    } catch (JSONException ignored) {
-                    }
-                    
-                    // ПОЧЕМУ БЕЗ ЭТОГО ВСЁ ВИСНЕТ?????????? (наверное потому что это было в цикле...)
-                    updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
-                    
-                    updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
-                }
-                
-                @Override
-                public void onFailure(String error) {
-                    
-                }
-            });
-        }
-    };
+//                
+//                @Override
+//                public void onFailure(String error) {
+//                    
+//                }
+//            });
+//        }
+//    };
     
     /**
      * Регулярное обновление местоположения.
@@ -969,6 +1106,22 @@ public class GoogleMapsActivity extends AppCompatActivity
                 markerAnimator.setDuration(500);
                 markerAnimator.start();
             }
+            
+            
+            // отпраляем координаты на сервер
+            
+            try {
+                JSONObject jo = new JSONObject();
+                jo.put("type", "cords");
+                jo.put("lat", location.getLatitude());
+                jo.put("lng", location.getLongitude());
+                jo.put("login", myProfile.getLogin());
+                
+                TcpClient.getInstance().sendMessage(jo);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            
         }
     };
     

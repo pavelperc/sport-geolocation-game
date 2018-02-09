@@ -46,8 +46,6 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     // Inflates the appropriate layout according to the ViewType.
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.d("myTag", "Called onCreateViewHolder.");
-    
         View view;
         
         if (viewType == VIEW_TYPE_MESSAGE_SENT) {
@@ -66,8 +64,6 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Log.d("myTag", "Called onCreateViewHolder.");
-    
         UserMessage message = mMessageList.get(position);
         
         switch (holder.getItemViewType()) {

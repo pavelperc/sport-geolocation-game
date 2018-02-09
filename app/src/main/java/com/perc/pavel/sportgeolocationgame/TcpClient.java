@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +23,10 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -40,7 +44,7 @@ class TcpClient {
     
     static final String SERVER_IP = "92.63.105.60"; //server IP address
     //    private static final int SERVER_PORT_TCP = 7071;
-    static final int SERVER_PORT_HTTP = 5050;
+    static final int SERVER_PORT_HTTP = 7070;
     private volatile boolean isTcpRunning = false;
     private boolean isTryingToStop = false;
     
@@ -100,7 +104,7 @@ class TcpClient {
     }
     
     /**
-     * Отключает от сервера. Закрывает все in/out потоки, 
+     * Отключает от сервера. Закрывает все in/out потоки,
      * ждёт пока поток слушания сообщения завершится, если он не завершён.
      */
     void stopClient() {
@@ -171,7 +175,8 @@ class TcpClient {
             public void run() {
                 Log.d(SERVER_LOG, "Start connecting: ");
                 
-                try (Socket socket = new Socket(SERVER_IP, getServerPortTcp())) {
+                try (Socket socket = new Socket()) {
+                    socket.connect(new InetSocketAddress(SERVER_IP, getServerPortTcp()), 7000);
                     //sends the message to the server
                     mBufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
                     //receives the message which the server sends back
@@ -246,7 +251,7 @@ class TcpClient {
                 
                 isTcpRunning = false;
                 Log.d(SERVER_LOG, "Closed socket thread. isTryingToStop = " + isTryingToStop);
-    
+                
             }
         });
         backgroundTcpThread.start();
@@ -269,6 +274,9 @@ class TcpClient {
     }
     
     
+    /**
+     * Возвращает url builder, заполненый http, server_ip, server_port
+     */
     static HttpUrl.Builder getUrlBuilder() {
         return new HttpUrl.Builder()
                 .scheme("http")
@@ -278,9 +286,35 @@ class TcpClient {
     
     
     void httpGetRequest(HttpUrl url, final HttpListener httpListener) {
+        httpPostRequest(url, null, httpListener);
+    }
+    
+    
+    /**
+     * Перегрузка метода post запроса, для случая когда нужен только один параметр http - pathSegment
+     * @param action параметр pathSegment для url
+     */
+    void httpPostRequest(String action, JSONObject json, HttpListener httpListener) {
+        HttpUrl url = getUrlBuilder().addPathSegment(action).build();
+        httpPostRequest(url, json, httpListener);
+    }
+    
+    void httpPostRequest(HttpUrl url, JSONObject json, final HttpListener httpListener) {
         final Handler handler = new Handler();
         
-        final Request request = new Request.Builder().url(url).build();
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        
+        
+        final Request request = json == null ?
+                new Request.Builder()
+                        .url(url)
+                        .build()
+                :
+                new Request.Builder()
+                        .url(url)
+                        .post(RequestBody.create(JSON, json.toString()))
+                        .build();
+        
         
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -299,9 +333,13 @@ class TcpClient {
                     @Override
                     public void run() {
                         try {
-                            httpListener.onResponse(response.body().string());
+                            JSONObject jo = new JSONObject(response.body().string());
+                            
+                            httpListener.onResponse(jo);
                         } catch (IOException e) {
                             httpListener.onFailure("Unexpected code: " + response);
+                        } catch (JSONException e) {
+                            httpListener.onFailure("JSONException: " + e.getMessage());
                         }
                     }
                 });

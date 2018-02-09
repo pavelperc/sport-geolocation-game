@@ -12,7 +12,7 @@ interface HttpListener {
      * Вызывается при ответе сервера.
      * @param message Ответ сервера.
      */
-    void onResponse(String message);
+    void onResponse(JSONObject message);
     
     void onFailure(String error);
 }
