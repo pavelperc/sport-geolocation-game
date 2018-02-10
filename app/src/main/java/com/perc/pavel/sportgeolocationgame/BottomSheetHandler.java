@@ -1,25 +1,34 @@
 package com.perc.pavel.sportgeolocationgame;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by pavel on 23.01.2018.
@@ -80,7 +89,18 @@ public class BottomSheetHandler {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         
         
-        setupCreateGame();
+        if (activity.createGame) {
+            activity.findViewById(R.id.ll_create_game).setVisibility(View.VISIBLE);
+//            activity.findViewById(R.id.ll_choose_team).setVisibility(View.GONE);
+            setupCreateGame();
+            
+        } else {
+            activity.findViewById(R.id.ll_create_game).setVisibility(View.GONE);
+//            activity.findViewById(R.id.ll_choose_team).setVisibility(View.VISIBLE);
+        }
+        
+        setupChooseTeam();
+        
         setupTeamSharing();
     }
     
@@ -171,12 +191,80 @@ public class BottomSheetHandler {
         sbFlagsCount.setProgress(2);// value = (2+1)*teamsCount
     }
     
+    private void setupChooseTeam() {
+        Spinner spChooseTeam = (Spinner) activity.findViewById(R.id.spChooseTeam);
+        
+        
+        final List<Integer> extendedTeamColors = new ArrayList<>(activity.teamColors);
+        extendedTeamColors.add(0, Player.NO_TEAM_COLOR);
+        
+        
+        final ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(activity, android.R.layout.simple_spinner_item, extendedTeamColors) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                v.setBackgroundColor(getItem(position));
+                return v;
+            }
+    
+            @Override
+            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView, parent);
+                v.setBackgroundColor(getItem(position));
+                return v;
+            }
+        };
+        
+        spChooseTeam.setAdapter(adapter);
+        
+        spChooseTeam.setSelection(0);
+        
+        spChooseTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            boolean firstTime = true;
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (firstTime) {
+                    firstTime = false;
+                    return;
+                }
+//                adapter.notifyDataSetChanged();
+                
+                
+                activity.changeMyTeamColor(extendedTeamColors.get(position));
+//                try {
+//                    JSONObject jo = new JSONObject();
+//                    jo.put("login", activity.myProfile.getLogin());
+//                    jo.put("type", "choose_team");
+//                    jo.put("team_color", extendedTeamColors.get(position));
+//                    TcpClient.getInstance().sendMessage(jo);
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+    
+                if (extendedTeamColors.get(0) == Player.NO_TEAM_COLOR) {
+                    extendedTeamColors.remove(0);
+//                    adapter.notifyDataSetChanged();
+                }
+            }
+    
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+        
+            }
+        });
+//        spChooseTeam.setSelection(0);
+    }
     
     private void setupTeamSharing() {
         RecyclerView rvTeamSharing = (RecyclerView) activity.findViewById(R.id.rv_team_sharing);
         
-        rvTeamSharing.setLayoutManager(new GridLayoutManager(activity, 3));
-        teamSharingAdapter = new PlayerListAdapter(activity, activity.players);
+        rvTeamSharing.setLayoutManager(new GridLayoutManager(activity, 3, GridLayoutManager.HORIZONTAL, false));
+//        rvTeamSharing.setLayoutManager(new LinearLayoutManager(activity));
+        teamSharingAdapter = new PlayerListAdapter(activity);
+//        activity.players = teamSharingAdapter.getPlayers();
+        rvTeamSharing.setAdapter(teamSharingAdapter);
     }
     
     

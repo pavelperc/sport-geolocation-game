@@ -6,4 +6,5 @@
     <color name="chatBackground">#64ffffff</color>
     <color name="chatMessageSent">#00c853</color>
     <color name="chatMessageReceived">#ff6f02</color>
+    <color name="bottom_sheet_background_color">#fe9e9e9e</color>
 </resources>

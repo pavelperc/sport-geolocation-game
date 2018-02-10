@@ -21,7 +21,9 @@
         android:id="@+id/ll_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/background_light"
+        android:background="@color/bottom_sheet_background_color"
+        android:clickable="true"
+        android:focusableInTouchMode="false"
         android:orientation="vertical">
 
         <ImageView
@@ -33,13 +35,14 @@
         <LinearLayout
             android:id="@+id/ll_create_game"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <LinearLayout
                 android:id="@+id/ll_head"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="50dp"
                 android:layout_gravity="right"
                 android:orientation="horizontal">
 
@@ -141,7 +144,7 @@
         <LinearLayout
             android:id="@+id/ll_team_sharing"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
@@ -156,8 +159,32 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_team_sharing"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="10dp"/>
+                android:layout_height="120dp"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_choose_team"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Выберите команду:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textStyle="bold"/>
+
+            <Spinner
+                android:id="@+id/spChooseTeam"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:layout_marginLeft="10dp"
+                />
         </LinearLayout>
     </LinearLayout>
 

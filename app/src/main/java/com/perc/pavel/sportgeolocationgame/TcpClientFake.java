@@ -22,8 +22,10 @@ import java.util.Random;
  */
 class TcpClientFake {
     
-    final String[] names = {"Fish", "Cat", "Dog", "Parrot"};
-    final String[] logins = {"fish", "cat", "dog", "parrot"};
+    final String[] names = {"Fish", "Cat", "Dog", "Parrot", "Cow", "Hen", "Pig", "Horse", "Sheep"};
+    final String[] logins = {"fish", "cat", "dog", "parrot", "cow", "hen", "pig", "horse", "sheep"};
+    
+    private Thread thread;
     
     private static TcpClientFake instance;
     
@@ -55,13 +57,13 @@ class TcpClientFake {
         connectionListener.onConnected();
         tcpMessageListener = messageListener;
         final Handler handler = new Handler();
-        new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Log.d("my_tag", "in TcpClientFake: starting send players");
                     for (int i = 0; i < logins.length; i++) {
-                        Thread.sleep(1000);
+                        Thread.sleep(500);
                         
                         final JSONObject jo = new JSONObject();
                         jo.put("type", "new_player_in_room");
@@ -78,7 +80,7 @@ class TcpClientFake {
                                 messageListener.onTCPMessageReceived(jo);
                             }
                         });
-                        Log.d("my_tag", "in TCPClientFake: sent");
+//                        Log.d("my_tag", "in TCPClientFake: sent");
                         
                         
                     }
@@ -93,10 +95,10 @@ class TcpClientFake {
                         final JSONObject jo = new JSONObject();
                         jo.put("type", "choose_team");
                         jo.put("login", player.login);
-                        jo.put("team_color", teamColors.get(i % TcpClientFake.this.teamColors.size()));
-                        
-                        
-                        Log.d("my_tag", "in tcp fake: sent " + jo);
+                        jo.put("team_color", teamColors.get((i) % TcpClientFake.this.teamColors.size()));
+
+
+//                        Log.d("my_tag", "in tcp fake: sent " + jo);
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -105,8 +107,8 @@ class TcpClientFake {
                         });
                     }
                     
-                    while (true) {
-                        Thread.sleep(3000);
+                    while (messageListener != null) {
+                        Thread.sleep(2000);
                         sendCoords(handler, messageListener);
                     }
                     
@@ -116,7 +118,8 @@ class TcpClientFake {
                 }
                 
             }
-        }).start();
+        });
+        thread.start();
     }
     
     private void sendCoords(Handler handler, final TcpMessageListener messageListener) {
@@ -213,7 +216,7 @@ class TcpClientFake {
                     JSONObject setupInfo = message.getJSONObject("setupGameInfo");
                     
                     JSONArray jColors = setupInfo.getJSONArray("teamColors");
-    
+                    
                     teamColors.clear();
                     for (int i = 0; i < jColors.length(); i++) {
                         teamColors.add(jColors.getInt(i));
@@ -305,6 +308,11 @@ class TcpClientFake {
     void stopClient() {
 //        tcpConnectionListener.onTCPConnectionStatusChanged(false);
         tcpMessageListener = null;
+        if (thread != null) {
+            thread.interrupt();
+            thread = null;
+        }
+        
     }
     
     /**

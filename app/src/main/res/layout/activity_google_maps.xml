@@ -154,16 +154,20 @@
                     android:fadingEdgeLength="30dp"
                     android:requiresFadingEdge="vertical"/>
 
-            </RelativeLayout>
+                <TextView
+                    android:id="@+id/tvRoomId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/tvMissedMsg"
+                    android:layout_toStartOf="@+id/rvTeammates"
+                    android:paddingLeft="10dp"
+                    android:text="room_id: ???"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                    android:textSize="32sp"
+                    android:visibility="gone"/>
 
-            <TextView
-                android:id="@+id/tvRoomId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="10dp"
-                android:text="room_id: ???"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-                android:visibility="gone"/>
+            </RelativeLayout>
 
         </LinearLayout>
 

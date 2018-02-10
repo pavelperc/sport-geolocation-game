@@ -23,6 +23,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -66,12 +67,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 public class GoogleMapsActivity extends AppCompatActivity
@@ -80,16 +79,16 @@ public class GoogleMapsActivity extends AppCompatActivity
     /** Профиль текущего игрока.*/
     Profile myProfile;
     private int roomId;
-    private boolean createGame;
+    boolean createGame;
     
     private Random rnd = new Random();
-    private GoogleMap googleMap;
+    GoogleMap googleMap;
     SupportMapFragment mapFragment;
     
     private FakeGps fakeGps;
     
     Map<String, Player> playersMap = new HashMap<>();
-    List<Player> players = new ArrayList<>();  
+    SortedList<Player> players;
     
     /** Объекты флажков по их номеру*/
     Map<Integer, Flag> flags = new HashMap<>();
@@ -130,7 +129,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     private int missedMsgCount = 0;
     
     
-    PlayerListAdapter myTeammatesAdapter;
+    MyTeammatesAdapter myTeammatesAdapter;
     List<Player> myTeammates;
     
     @Override
@@ -151,9 +150,10 @@ public class GoogleMapsActivity extends AppCompatActivity
         roomId = getIntent().getIntExtra("roomId", -1);
         createGame = getIntent().getBooleanExtra("createGame", false);
         
-        if (createGame) {
-            myTeamColor = teamColors.get(0);
-        }
+//        if (createGame) {
+//            myTeamColor = teamColors.get(0);
+//        }
+        
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
         if (createGame) {
             tvRoomId.setText("ROOM_ID: " + roomId);
@@ -162,28 +162,33 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         
         // Создание справа списка с моими сокомандниками
-        myTeammates = new ArrayList<>();
         
         RecyclerView rvTeammates = (RecyclerView) findViewById(R.id.rvTeammates);
         rvTeammates.setLayoutManager(new LinearLayoutManager(this));
         
-        myTeammatesAdapter = new PlayerListAdapter(this, myTeammates);
+        myTeammates = new ArrayList<>();
+        myTeammatesAdapter = new MyTeammatesAdapter(this, myTeammates);
         rvTeammates.setAdapter(myTeammatesAdapter);
         
-        myTeammates.add(new Player("my_cat", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_dog", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_parrot", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_cow", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_hen", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_pig", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_horse", 10, 10, myTeamColor));
-        myTeammates.add(new Player("my_sheep", 10, 10, myTeamColor));
-        myTeammatesAdapter.notifyDataSetChanged();
         
+//        myTeammates.add(new Player("my_cat", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_dog", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_parrot", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_cow", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_hen", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_pig", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_horse", 10, 10, myTeamColor));
+//        myTeammates.add(new Player("my_sheep", 10, 10, myTeamColor));
+//        myTeammatesAdapter.notifyDataSetChanged();
         
-        
-        // создание выдвигающегося экрана снизу
+        // создание выдвигающегося экрана снизу и списка игроков, привязанного к teamSharingAdapter
         bottomSheetHandler = new BottomSheetHandler(this);
+        players = bottomSheetHandler.teamSharingAdapter.getPlayers();
+        
+        
+        // добавляем себя в список игроков
+        addPlayer(new Player(myProfile.getLogin(), myProfile.getName(), myTeamColor));
+        
     
     
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -198,7 +203,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                 ViewGroup.LayoutParams params = mapFragment.getView().getLayoutParams();
                 // params.height изначально равна -1 (MATCH_PARENT)
                 // а вот mapFragment.getView().getHeight() выдаёт настоящую высоту
-                params.height = (int) (mapFragment.getView().getHeight() * 1.5);
+                params.height = (int) (mapFragment.getView().getHeight() * 1.4);
                 mapFragment.getView().setLayoutParams(params);
             }
         });
@@ -832,7 +837,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                             pl = playersMap.get(login);
                             pl.setCoords(jo.getDouble("lat"), jo.getDouble("lng"));
                         }
-                        else {// прислался неизвестный игрок
+                        else {// прислал координаты неизвестный игрок
                             // UNREACHABLE
                             Log.d("my_tag", "IN UNREACHABLE");
                             pl = new Player(jo);
@@ -848,14 +853,18 @@ public class GoogleMapsActivity extends AppCompatActivity
                     }
                     break;
                 case "choose_team":
-                    try {
-                        Player pll = playersMap.get(jo.getString("login"));
-                        pll.setTeamColor(jo.getInt("team_color"));
-                        updatePlayers();
-                        pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
-                    } catch(Exception e){
-                        Log.d("my_tag", "choose_team ERROR: login = " + jo.getString("login") + " playersMap = :" + playersMap);
+                    
+                    if (jo.getString("login").equals(myProfile.getLogin())) {
+                        changeMyTeamColor(jo.getInt("team_color"));
+                        return;
                     }
+                    
+                    Player pll = playersMap.get(jo.getString("login"));
+                    updatePlayer(pll, jo.getInt("team_color"));
+                    
+                    
+                    pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
+                    
                     break;
                 default:
                     Toast.makeText(GoogleMapsActivity.this, "TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
@@ -869,27 +878,71 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     /** Добавляем в players и обновляем все списки. Маркеры не обновляются!*/
     private void addPlayer(Player p) {
+        // SortedList вызовет соответствующий notify если нужно
         players.add(p);
         playersMap.put(p.login, p);
         Log.d("my_tag", "put player in map: " + p.login);
         
-        updatePlayers();
+        // исключаем тех, кто так же как и мы не выбрал цвет, себя и другие цвета
+        if (p.hasTeam() && p.teamColor == myTeamColor && !Objects.equals(p.login, myProfile.getLogin())) {
+            myTeammates.add(p);
+            myTeammatesAdapter.notifyItemInserted(myTeammates.size() - 1);
+        }
     }
     
-    /** обновляем все списки в bottomSheet. Маркеры не обновляются!*/
-    private void updatePlayers() {
-        Collections.sort(players, new Comparator<Player>() {
-            @Override
-            public int compare(Player o1, Player o2) {
-                int t = Integer.compare(o1.teamColor, o2.teamColor);
-                if (t == 0) {
-                    t = o1.name.compareTo(o2.name);
-                }
-                return t;
-            }
-        });
+    /** Обновляем все списки в bottomSheet и myTeammates. Маркеры не обновляются!*/
+    private void updatePlayer(Player item, int teamColor) {
         
-        bottomSheetHandler.teamSharingAdapter.notifyDataSetChanged();
+        // !!!Обязательно нужно найти позиции элементов в SortedList до их изменения!!!
+        int playersPosition = players.indexOf(item);
+        // Меняем сам элемент
+        item.setTeamColor(teamColor);
+        // Обновляем в players
+        players.updateItemAt(playersPosition, item);
+        
+        
+        // пытаемся добавить или удалить элемент из myTeammates
+        
+        int teammatesPosition = myTeammates.indexOf(item);
+        
+        // если элемент был, но цвет поменялся на неправильный
+        if (item.teamColor != myTeamColor && teammatesPosition != -1) {
+            myTeammates.remove(teammatesPosition);
+            myTeammatesAdapter.notifyItemRemoved(teammatesPosition);
+        }
+        // если элемента не было, но цвет стал правильный
+        else if (item.teamColor == myTeamColor && teammatesPosition == -1) {
+            myTeammates.add(item);
+            myTeammatesAdapter.notifyItemInserted(myTeammates.size() - 1);
+        }
+    }
+    
+    void changeMyTeamColor(int newColor) {
+        myTeamColor = newColor;
+        myLocationMarker.setIcon(getColoredImage(R.drawable.white_arrow_me, newColor));
+        myTeammates.clear();
+        
+        // Обновляем элемент в списке всех людей в bottomsheet
+        
+        Player item = playersMap.get(myProfile.getLogin());
+        // !!!Обязательно нужно найти позиции элементов в SortedList до их изменения!!!
+        int playersPosition = players.indexOf(item);
+        // Меняем сам элемент
+        item.setTeamColor(newColor);
+        // Обновляем в players
+        players.updateItemAt(playersPosition, item);
+        
+        
+        // Обновляем teammates
+        for (Player player : playersMap.values()) {
+            if(player.login.equals(myProfile.getLogin()))
+                continue;
+            
+            if (player.teamColor == newColor) {
+                myTeammates.add(player);
+            }
+        }
+        myTeammatesAdapter.notifyDataSetChanged();
     }
     
     
@@ -915,7 +968,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         stopLocationUpdates();
         stopPlayersUpdates();
         TcpClient.getInstance().stopClient();
-        
+        TcpClientFake.getInstance().stopClient();
         super.onDestroy();
     }
     

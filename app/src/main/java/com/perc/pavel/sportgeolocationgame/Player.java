@@ -62,13 +62,13 @@ class Player {
         return new LatLng(lat, lng);
     }
     
-    Player(String login) {
+    
+    Player(String login, String name, int teamColor) {
         this.login = login;
+        this.name = name;
+        this.teamColor = teamColor;
     }
     
-    Player(String login, double lat, double lng, int teamColor) {
-        this(login, login, lat, lng, teamColor);
-    }
     Player(String login, String name, double lat, double lng, int teamColor) {
         this.login = login;
         this.name = name;
