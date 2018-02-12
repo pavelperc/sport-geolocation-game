@@ -90,7 +90,7 @@ class TcpClientFake {
                     
                     for (int i = 0; i < players.size(); i++) {
                         Player player = players.get(i);
-                        Thread.sleep(1000);
+                        Thread.sleep(600);
                         
                         final JSONObject jo = new JSONObject();
                         jo.put("type", "choose_team");

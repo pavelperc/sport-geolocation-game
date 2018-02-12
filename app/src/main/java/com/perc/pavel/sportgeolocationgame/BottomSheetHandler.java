@@ -22,6 +22,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +39,10 @@ public class BottomSheetHandler {
     private final BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
     private GoogleMapsActivity activity;
     PlayerListAdapter teamSharingAdapter;
+    
+    TextView tvFlagInfo;
+    Button btnPickFlag;
+    private Flag selectedFlag;
 
 //    private RelativeLayout rlMainScreen;
     
@@ -98,6 +103,8 @@ public class BottomSheetHandler {
             activity.findViewById(R.id.ll_create_game).setVisibility(View.GONE);
 //            activity.findViewById(R.id.ll_choose_team).setVisibility(View.VISIBLE);
         }
+        activity.findViewById(R.id.ll_flag_info).setVisibility(View.GONE);
+        
         
         setupChooseTeam();
         
@@ -118,8 +125,18 @@ public class BottomSheetHandler {
         btnStartGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                for (Player player : activity.playersMap.values()) {
+                    if (!player.hasTeam()) {
+                        Toast.makeText(activity, "Не все игроки выбрали команду.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+                
+                
                 activity.tvRoomId.setVisibility(View.GONE);
                 hide();
+                prepareForFlags();
+                
                 // отправить флажки
             
                 try {
@@ -191,6 +208,8 @@ public class BottomSheetHandler {
         sbFlagsCount.setProgress(2);// value = (2+1)*teamsCount
     }
     
+    
+    /** Настройка области для выбора команды*/
     private void setupChooseTeam() {
         Spinner spChooseTeam = (Spinner) activity.findViewById(R.id.spChooseTeam);
         
@@ -207,7 +226,7 @@ public class BottomSheetHandler {
                 v.setBackgroundColor(getItem(position));
                 return v;
             }
-    
+            
             @Override
             public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View v = super.getDropDownView(position, convertView, parent);
@@ -218,8 +237,6 @@ public class BottomSheetHandler {
         
         spChooseTeam.setAdapter(adapter);
         
-        spChooseTeam.setSelection(0);
-        
         spChooseTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             boolean firstTime = true;
             @Override
@@ -228,9 +245,6 @@ public class BottomSheetHandler {
                     firstTime = false;
                     return;
                 }
-//                adapter.notifyDataSetChanged();
-                
-                
                 activity.changeMyTeamColor(extendedTeamColors.get(position));
 //                try {
 //                    JSONObject jo = new JSONObject();
@@ -242,11 +256,6 @@ public class BottomSheetHandler {
 //                } catch (JSONException e) {
 //                    e.printStackTrace();
 //                }
-    
-                if (extendedTeamColors.get(0) == Player.NO_TEAM_COLOR) {
-                    extendedTeamColors.remove(0);
-//                    adapter.notifyDataSetChanged();
-                }
             }
     
             @Override
@@ -254,9 +263,9 @@ public class BottomSheetHandler {
         
             }
         });
-//        spChooseTeam.setSelection(0);
     }
     
+    /** Настройка области со списком подключившихся игроков*/
     private void setupTeamSharing() {
         RecyclerView rvTeamSharing = (RecyclerView) activity.findViewById(R.id.rv_team_sharing);
         
@@ -266,6 +275,59 @@ public class BottomSheetHandler {
 //        activity.players = teamSharingAdapter.getPlayers();
         rvTeamSharing.setAdapter(teamSharingAdapter);
     }
+    
+    
+    
+    boolean isPreparedForFlags() {
+        return tvFlagInfo != null && btnPickFlag != null;
+    }
+    
+    void prepareForFlags() {
+        keepNotHidden = false;
+        activity.findViewById(R.id.ll_flag_info).setVisibility(View.VISIBLE);
+        activity.findViewById(R.id.ll_create_game).setVisibility(View.GONE);
+        activity.findViewById(R.id.ll_choose_team).setVisibility(View.GONE);
+        activity.findViewById(R.id.ll_team_sharing).setVisibility(View.GONE);
+        
+        tvFlagInfo = (TextView) activity.findViewById(R.id.tvFlagInfo);
+        btnPickFlag = (Button) activity.findViewById(R.id.btnPickFlag);
+        btnPickFlag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (selectedFlag == null) {
+                    return;
+                }
+                
+                activity.pickFlag(selectedFlag);
+                
+//                try {
+//                    JSONObject jo = new JSONObject();
+//                    jo.put("type", "activate_flag");
+//                    jo.put("number", selectedFlag.number);
+//                    TcpClient.getInstance().sendMessage(jo);
+//                } catch (JSONException e) {}
+    
+            }
+        });
+    }
+    
+    void openFlagBar(Flag flag) {
+        // если не был вызван метод prepareForFlags
+        if (!isPreparedForFlags())
+            return;
+        
+        selectedFlag = flag;
+        
+        double dist = activity.myLastLocation.distanceTo(activity.llToLoc(flag.getPosition()));
+        
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        
+        btnPickFlag.setEnabled(dist < 40 && !flag.activated && flag.teamColor == activity.myPlayer.teamColor);
+        
+        tvFlagInfo.setText(String.format("flag %d, distance: %.2f, activated: %b" +
+                "\n(distance should be < 40 for picking and flag shouldn't be activated and belong to other team)", flag.number, dist, flag.activated));
+    }
+    
     
     
     private int convertDpToPixels(float dp) {
@@ -293,5 +355,10 @@ public class BottomSheetHandler {
     void hide() {
         keepNotHidden = false;
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+    
+    void hideFlagBar() {
+        if (isPreparedForFlags())
+            hide();
     }
 }

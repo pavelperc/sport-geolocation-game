@@ -2,6 +2,7 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.graphics.Color;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import org.json.JSONException;
@@ -91,4 +92,8 @@ public class Flag {
         return marker != null;
     }
     
+    
+    LatLng getPosition() {
+        return new LatLng(lat, lng);
+    }
 }

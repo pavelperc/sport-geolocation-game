@@ -31,6 +31,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.view.animation.AnticipateInterpolator;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
 import android.view.inputmethod.EditorInfo;
@@ -76,8 +77,6 @@ import java.util.Random;
 public class GoogleMapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, TcpMessageListener {
     
-    /** Профиль текущего игрока.*/
-    Profile myProfile;
     private int roomId;
     boolean createGame;
     
@@ -90,6 +89,11 @@ public class GoogleMapsActivity extends AppCompatActivity
     Map<String, Player> playersMap = new HashMap<>();
     SortedList<Player> players;
     
+    /** Служит для хранения команды, логина и имени, Location никогда не заполняется
+     * TeamColor по умолчанию серый (Player.NO_TEAM_COLOR)*/
+    Player myPlayer;
+    
+    
     /** Объекты флажков по их номеру*/
     Map<Integer, Flag> flags = new HashMap<>();
     private Map<Marker, Flag> markerToFlagMap = new HashMap<>();
@@ -99,7 +103,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     private BottomSheetHandler bottomSheetHandler;
     
-    private int myTeamColor = Player.NO_TEAM_COLOR;
+//    private int myTeamColor = Player.NO_TEAM_COLOR;
     private Marker myLocationMarker;
     
     /** Последнее местоположение.*/
@@ -144,14 +148,15 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         // полуаем параметры из intent-а
         
-        myProfile = (Profile) getIntent().getSerializableExtra("profile");
+        // Профиль текущего игрока.
+        Profile myProfile = (Profile) getIntent().getSerializableExtra("profile");
         teamColors = (ArrayList<Integer>) getIntent().getSerializableExtra("teamColors");
 //        myName = getIntent().getStringExtra("name");
         roomId = getIntent().getIntExtra("roomId", -1);
         createGame = getIntent().getBooleanExtra("createGame", false);
         
 //        if (createGame) {
-//            myTeamColor = teamColors.get(0);
+//            myPlayer.teamColor = teamColors.get(0);
 //        }
         
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
@@ -171,24 +176,15 @@ public class GoogleMapsActivity extends AppCompatActivity
         rvTeammates.setAdapter(myTeammatesAdapter);
         
         
-//        myTeammates.add(new Player("my_cat", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_dog", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_parrot", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_cow", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_hen", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_pig", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_horse", 10, 10, myTeamColor));
-//        myTeammates.add(new Player("my_sheep", 10, 10, myTeamColor));
-//        myTeammatesAdapter.notifyDataSetChanged();
+        
+        // добавляем себя в список игроков
+        myPlayer = new Player(myProfile.getLogin(), myProfile.getName(), Player.NO_TEAM_COLOR);
+        playersMap.put(myPlayer.login, myPlayer);
         
         // создание выдвигающегося экрана снизу и списка игроков, привязанного к teamSharingAdapter
         bottomSheetHandler = new BottomSheetHandler(this);
         players = bottomSheetHandler.teamSharingAdapter.getPlayers();
-        
-        
-        // добавляем себя в список игроков
-        addPlayer(new Player(myProfile.getLogin(), myProfile.getName(), myTeamColor));
-        
+        addPlayer(myPlayer);
     
     
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -232,7 +228,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
         messageList = new ArrayList<>();
-        mMessageAdapter = new MessageListAdapter(this, messageList, myProfile.getName());
+        mMessageAdapter = new MessageListAdapter(this, messageList, myPlayer.name);
         
         mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
         mMessageRecycler.setAdapter(mMessageAdapter);
@@ -248,7 +244,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                 try {
                     JSONObject jo = new JSONObject();
                     jo.put("type", "connection");
-                    jo.put("login", myProfile.getLogin());
+                    jo.put("login", myPlayer.login);
                     TcpClient.getInstance().sendMessage(jo);
                 } catch (JSONException ignored) {
                 }
@@ -435,7 +431,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         myLocationMarker = googleMap.addMarker(new MarkerOptions()
                 .position(locToLL(myLastLocation))
                 .anchor(0.5f, 0.5f)
-                .icon(getColoredImage(R.drawable.white_arrow_me, myTeamColor))
+                .icon(getColoredImage(R.drawable.white_arrow_me, myPlayer.teamColor))
                 .zIndex(1)
                 .rotation(0)
                 .flat(true));
@@ -446,6 +442,12 @@ public class GoogleMapsActivity extends AppCompatActivity
         // обработка нажатия на маркер
         googleMap.setOnMarkerClickListener(this);
         
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                bottomSheetHandler.hideFlagBar();
+            }
+        });
         
         // Мнгновенное перемещение камеры в центр локации с заданным масштабом
 //        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locToLL(myLastLocation), 14));
@@ -582,7 +584,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         return new LatLng(location.getLatitude(), location.getLongitude());
     }
     
-    private Location llToLoc(LatLng latLng) {
+    Location llToLoc(LatLng latLng) {
         Location res = new Location("");
         res.setLatitude(latLng.latitude);
         res.setLongitude(latLng.longitude);
@@ -690,89 +692,45 @@ public class GoogleMapsActivity extends AppCompatActivity
         if (marker.getTag() == "player-location")
             return true;
         if (marker.getTag() == "player") {
+            bottomSheetHandler.hideFlagBar();
             return false;
         }
         
         // если маркер - флажок
         
-        
-        double dist = myLastLocation.distanceTo(llToLoc(marker.getPosition()));
         final Flag flag = markerToFlagMap.get(marker);
         if (flag != null) {
-            Toast.makeText(GoogleMapsActivity.this, "flag " + flag.number + "\ndistance: " + dist, Toast.LENGTH_SHORT).show();
-            if (dist < 100 && flag.teamColor == myTeamColor && !flag.activated) {
-//                addMessageToChat("I have captured the flag " + flag.number + "!!!", GoogleMapsActivity.this.myLogin);
-//                addMessageToChat("Oh no!!", "somePlayer");
-                flag.activate();
-                // перекрашиваем флаг в свой цвет
-                // flag.teamColor = myTeamColor;
-                
-                // Красим кешированную картинку
-                marker.setIcon(getColoredImage(whiteFlagBitmap, flag.getColorWithActivation()));
-                
-                
-                // Анимация флага - подпрыгивание
-                Handler mHandler = new Handler();
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        final Handler handler = new Handler();
-                        final long start = SystemClock.uptimeMillis();
-                        final long duration = 1000;
-                        
-                        final Interpolator interpolator = new BounceInterpolator();
-                        
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                long elapsed = SystemClock.uptimeMillis() - start;
-                                float t = Math.max(
-                                        1 - interpolator.getInterpolation((float) elapsed
-                                                / duration), 0);
-                                marker.setAnchor(8f / 48f, 1f + t);
-                                
-                                if (t > 0.0) {
-                                    // Post again 16ms later.
-                                    handler.postDelayed(this, 32);
-                                }
-                            }
-                        });
-                    }
-                });
-                
-                
-                // Отправка сообщения об активации флага
-                
-                JSONObject jo = new JSONObject();
-                try {
-                    jo.put("type", "activateFlag");
-                    jo.put("index", flag.number);
-                    jo.put("color", myTeamColor);
-                } catch (JSONException ignored) {
-                }
-                
-                
-                TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-                    @Override
-                    public void onResponse(JSONObject message) {
-                        try {
-                            // если не удалось обновить флажок на сервере
-                            if (message.getInt("response") == 0) {
-                                Toast.makeText(GoogleMapsActivity.this, "error: " + message.optString("error"), Toast.LENGTH_SHORT).show();
-                                // всё отменяем
-                                flag.deactivate();
-                                marker.setIcon(getColoredImage(R.drawable.white_flag, flag.getColorWithActivation()));
-                            }
-                        } catch (JSONException ignored) {
-                        }
-                    }
+    
+            // Анимация флага - подпрыгивание
+            Handler mHandler = new Handler();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    final Handler handler = new Handler();
+                    final long start = SystemClock.uptimeMillis();
+                    final long duration = 200;
+            
+                    final Interpolator interpolator = new AnticipateInterpolator();
+            
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            long elapsed = SystemClock.uptimeMillis() - start;
+                            float t = Math.max(
+                                    1 - interpolator.getInterpolation((float) elapsed
+                                            / duration), 0);
+                            flag.getMarker().setAnchor(8f / 48f, 1f + t * 0.2f);
                     
-                    @Override
-                    public void onFailure(String error) {
-                        
-                    }
-                });
-            }
+                            if (t > 0.0) {
+                                // Post again 16ms later.
+                                handler.postDelayed(this, 32);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            bottomSheetHandler.openFlagBar(flag);
         } else {
             Toast.makeText(GoogleMapsActivity.this, "unknown flag", Toast.LENGTH_SHORT).show();
         }
@@ -818,18 +776,18 @@ public class GoogleMapsActivity extends AppCompatActivity
                             flags.put(flag.number, flag);
                             createFlagMarker(flag);
                         }
-                        
-                        // закрываем bottom_sheet
-                        
-                        bottomSheetHandler.hide();
                     }
+    
+                    // закрываем bottom_sheet
+                    bottomSheetHandler.hide();
+                    bottomSheetHandler.prepareForFlags();
                     
                     Toast.makeText(this, "GAME STARTED!!!", Toast.LENGTH_SHORT).show();
                     break;
                 case "cords":
                     String login = jo.getString("login");
                     // если отослали не мы
-                    if (!login.equals(myProfile.getLogin())) {
+                    if (!login.equals(myPlayer.login)) {
     
                         Player pl;
                         // если такой игрок присутствует
@@ -854,7 +812,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     break;
                 case "choose_team":
                     
-                    if (jo.getString("login").equals(myProfile.getLogin())) {
+                    if (jo.getString("login").equals(myPlayer.login)) {
                         changeMyTeamColor(jo.getInt("team_color"));
                         return;
                     }
@@ -866,6 +824,10 @@ public class GoogleMapsActivity extends AppCompatActivity
                     pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
                     
                     break;
+                case "activate_flag":
+                    pickFlag(flags.get(jo.getInt("number")));
+                
+                
                 default:
                     Toast.makeText(GoogleMapsActivity.this, "TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
             }
@@ -884,7 +846,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         Log.d("my_tag", "put player in map: " + p.login);
         
         // исключаем тех, кто так же как и мы не выбрал цвет, себя и другие цвета
-        if (p.hasTeam() && p.teamColor == myTeamColor && !Objects.equals(p.login, myProfile.getLogin())) {
+        if (p.hasTeam() && p.teamColor == myPlayer.teamColor && !Objects.equals(p.login, myPlayer.login)) {
             myTeammates.add(p);
             myTeammatesAdapter.notifyItemInserted(myTeammates.size() - 1);
         }
@@ -906,36 +868,36 @@ public class GoogleMapsActivity extends AppCompatActivity
         int teammatesPosition = myTeammates.indexOf(item);
         
         // если элемент был, но цвет поменялся на неправильный
-        if (item.teamColor != myTeamColor && teammatesPosition != -1) {
+        if (item.teamColor != myPlayer.teamColor && teammatesPosition != -1) {
             myTeammates.remove(teammatesPosition);
             myTeammatesAdapter.notifyItemRemoved(teammatesPosition);
         }
         // если элемента не было, но цвет стал правильный
-        else if (item.teamColor == myTeamColor && teammatesPosition == -1) {
+        else if (item.teamColor == myPlayer.teamColor && teammatesPosition == -1) {
             myTeammates.add(item);
             myTeammatesAdapter.notifyItemInserted(myTeammates.size() - 1);
         }
     }
     
+    
+    /** Обновляет все списки и маркер, но не посылает запрос серверу. (Предполагается, что запрос уже отправлен и подтверждён)*/
     void changeMyTeamColor(int newColor) {
-        myTeamColor = newColor;
         myLocationMarker.setIcon(getColoredImage(R.drawable.white_arrow_me, newColor));
         myTeammates.clear();
         
         // Обновляем элемент в списке всех людей в bottomsheet
         
-        Player item = playersMap.get(myProfile.getLogin());
         // !!!Обязательно нужно найти позиции элементов в SortedList до их изменения!!!
-        int playersPosition = players.indexOf(item);
+        int playersPosition = players.indexOf(myPlayer);
         // Меняем сам элемент
-        item.setTeamColor(newColor);
+        myPlayer.setTeamColor(newColor);
         // Обновляем в players
-        players.updateItemAt(playersPosition, item);
+        players.updateItemAt(playersPosition, myPlayer);
         
         
         // Обновляем teammates
         for (Player player : playersMap.values()) {
-            if(player.login.equals(myProfile.getLogin()))
+            if(player == myPlayer)
                 continue;
             
             if (player.teamColor == newColor) {
@@ -943,6 +905,49 @@ public class GoogleMapsActivity extends AppCompatActivity
             }
         }
         myTeammatesAdapter.notifyDataSetChanged();
+    }
+    
+    /** Запускает анимацию захвата флага и обновляет все поля, но не посылает запрос серверу.
+     * (Предполагается, что запрос уже отправлен и подтверждён)*/
+    public void pickFlag(final Flag flag) {
+        bottomSheetHandler.hideFlagBar();
+        flag.activate();
+        // перекрашиваем флаг в свой цвет
+        // flag.teamColor = myPlayer.teamColor;
+        
+        // Красим кешированную картинку
+        flag.getMarker().setIcon(getColoredImage(whiteFlagBitmap, flag.getColorWithActivation()));
+        
+        
+        // Анимация флага - подпрыгивание
+        Handler mHandler = new Handler();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                final Handler handler = new Handler();
+                final long start = SystemClock.uptimeMillis();
+                final long duration = 1000;
+
+                final Interpolator interpolator = new BounceInterpolator();
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        long elapsed = SystemClock.uptimeMillis() - start;
+                        float t = Math.max(
+                                1 - interpolator.getInterpolation((float) elapsed
+                                        / duration), 0);
+                        flag.getMarker().setAnchor(8f / 48f, 1f + t);
+
+                        if (t > 0.0) {
+                            // Post again 16ms later.
+                            handler.postDelayed(this, 32);
+                        }
+                    }
+                });
+            }
+        });
+        
     }
     
     
@@ -1005,7 +1010,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         try {
             JSONObject jo = new JSONObject();
             jo.put("type", "message_chat");
-            jo.put("name", myProfile.getName());
+            jo.put("name", myPlayer.name);
             jo.put("message", etChatBox.getText().toString());
             
             TcpClient.getInstance().sendMessage(jo);
@@ -1168,7 +1173,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                 jo.put("type", "cords");
                 jo.put("lat", location.getLatitude());
                 jo.put("lng", location.getLongitude());
-                jo.put("login", myProfile.getLogin());
+                jo.put("login", myPlayer.login);
                 
                 TcpClient.getInstance().sendMessage(jo);
             } catch (JSONException e) {
