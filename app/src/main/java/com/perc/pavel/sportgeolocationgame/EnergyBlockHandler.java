@@ -1,6 +1,5 @@
 package com.perc.pavel.sportgeolocationgame;
 
-import android.app.Activity;
 import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.TextView;
@@ -12,8 +11,10 @@ import android.widget.TextView;
 public class EnergyBlockHandler {
     
     static int INTERVAL_MS = 1000;
+    
     static int getFlagCost(double distance) {
-        return (int) distance;
+        int dist = (int) distance;
+        return dist * 2;
     }
     
     
@@ -27,7 +28,7 @@ public class EnergyBlockHandler {
     
     CountDownTimer timer;
     
-    EnergyBlockHandler(GoogleMapsActivity activity) {
+    EnergyBlockHandler(final GoogleMapsActivity activity) {
         this.activity = activity;
         
         activity.findViewById(R.id.ll_energy_block).setVisibility(View.VISIBLE);
@@ -39,6 +40,9 @@ public class EnergyBlockHandler {
             @Override
             public void onTick(long millisUntilFinished) {
                 addEnergy(getSpeed());
+                
+                activity.bottomSheetHandler.updateSelectedFlagBar();
+                
             }
     
             @Override

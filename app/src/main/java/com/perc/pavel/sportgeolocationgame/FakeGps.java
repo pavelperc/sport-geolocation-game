@@ -39,6 +39,7 @@ public class FakeGps implements Runnable {
      * (это называется Азимут)
      */
     double bearing = 0;
+    private boolean go = false;
     
     
     FakeGps(double lat, double lng, LocationCallback locationCallback) {
@@ -48,6 +49,7 @@ public class FakeGps implements Runnable {
     
         // Сразу отправляем текущие координаты без задержки
         sendLocation();
+        handler.postDelayed(this, DELAY);
     }
     
     void setSuperSpeed(boolean superSpeed) {
@@ -58,10 +60,14 @@ public class FakeGps implements Runnable {
     }
     
     void start() {
-        handler.removeCallbacks(this);
-        handler.postDelayed(this, DELAY);
+        go = true;
+        
     }
     void stop() {
+        go = false;
+    }
+    
+    void destroy() {
         handler.removeCallbacks(this);
     }
     
@@ -90,10 +96,12 @@ public class FakeGps implements Runnable {
     
     @Override
     public void run() {
-        // меняем координаты 
-        lat += 0.718 * Math.cos(bearing * Math.PI / 180) * STEP;
-        lng += Math.sin(bearing * Math.PI / 180) * STEP;
         
+        if (go) {
+            // меняем координаты 
+            lat += 0.718 * Math.cos(bearing * Math.PI / 180) * STEP;
+            lng += Math.sin(bearing * Math.PI / 180) * STEP;
+        }
         sendLocation();
         
         handler.postDelayed(this, DELAY);

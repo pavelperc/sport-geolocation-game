@@ -27,7 +27,7 @@ class TcpClientFake {
     
     private Thread thread;
     
-    private static TcpClientFake instance;
+    static TcpClientFake instance;
     
     static TcpClientFake getInstance() {
         if (instance == null)

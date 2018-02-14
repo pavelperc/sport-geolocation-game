@@ -80,7 +80,7 @@ class Player {
     
     Player(JSONObject player) throws JSONException {
         login = player.getString("login");
-        name = player.getString("name");
+        name = player.optString("name", login);
         
         lat = player.optDouble("lat", UNSET_COORD);
         lng = player.optDouble("lng", UNSET_COORD);

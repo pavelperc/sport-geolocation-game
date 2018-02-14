@@ -103,7 +103,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     ArrayList<Integer> teamColors = new ArrayList<>();
     Circle circle;
     
-    private BottomSheetHandler bottomSheetHandler;
+    BottomSheetHandler bottomSheetHandler;
     EnergyBlockHandler energyBlockHandler;
         
     //    private int myTeamColor = Player.NO_TEAM_COLOR;
@@ -239,34 +239,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         rlChat = (RelativeLayout) findViewById(R.id.rlChat);
         rlChat.setVisibility(View.GONE);
         
-        TcpClient.getInstance().startAsync(new TcpConnectionListener() {
-            @Override
-            public void onConnected() {
-                Log.d(TcpClient.SERVER_LOG, "in onConnected.");
-                Toast.makeText(GoogleMapsActivity.this, "connected tcp", Toast.LENGTH_SHORT).show();
-                try {
-                    JSONObject jo = new JSONObject();
-                    jo.put("type", "connection");
-                    jo.put("login", myPlayer.login);
-                    TcpClient.getInstance().sendMessage(jo);
-                } catch (JSONException ignored) {
-                }
-            }
-            
-            @Override
-            public void onConnectionError(String error) {
-                try { // на случай если активти уже закрыта.
-//                    Toast.makeText(GoogleMapsActivity.this, error, Toast.LENGTH_SHORT).showCollapsed();
-                    showConnectionErrorAlert(error, this);
-                    Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
-                    
-                } catch (Exception e) {
-                    Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
-                }
-            }
-        });
         
-        TcpClient.getInstance().addMessageListener(this);
         
         
         // добавлениие всех пользователей, подключившихся ранее
@@ -287,7 +260,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                         }
                         
                         JSONArray ja = message.getJSONArray("players");
-    
+                        
                         for (int i = 0; i < ja.length(); i++) {
                             Player p = new Player(ja.getJSONObject(i));
                             // не допускаем замены текущего игрока, так как потом невозможно будет найти объект myPLayer
@@ -301,18 +274,54 @@ public class GoogleMapsActivity extends AppCompatActivity
                     } catch (JSONException e) {
                         Toast.makeText(GoogleMapsActivity.this, "JSONException in get_players_in_room:\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
+                    // настраиваем TCP после того, как добавили всех пользователей в комнате
+                    setupTCP();
                 }
     
                 @Override
                 public void onFailure(String error) {
-                    
+                    setupTCP();
                 }
             });
     
+        } else {
+            setupTCP();
         }
         
         
     }
+    
+    private void setupTCP() {
+        TcpClient.getInstance().startAsync(new TcpConnectionListener() {
+            @Override
+            public void onConnected() {
+                Log.d(TcpClient.SERVER_LOG, "in onConnected.");
+                Toast.makeText(GoogleMapsActivity.this, "connected tcp", Toast.LENGTH_SHORT).show();
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", "connection");
+                    jo.put("login", myPlayer.login);
+                    TcpClient.getInstance().sendMessage(jo);
+                } catch (JSONException ignored) {
+                }
+            }
+        
+            @Override
+            public void onConnectionError(String error) {
+                try { // на случай если активти уже закрыта.
+//                    Toast.makeText(GoogleMapsActivity.this, error, Toast.LENGTH_SHORT).showCollapsed();
+                    showConnectionErrorAlert(error, this);
+                    Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
+                
+                } catch (Exception e) {
+                    Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
+                }
+            }
+        });
+    
+        TcpClient.getInstance().addMessageListener(this);
+    }
+    
     
     /**
      * Вывести диалоговое окно
@@ -424,10 +433,11 @@ public class GoogleMapsActivity extends AppCompatActivity
         
     }
     
+    /** Остановка насовсем*/
     private void stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(mLocationCallback);
         if (fakeGps != null) {
-            fakeGps.stop();
+            fakeGps.destroy();
         }
         Log.d("my_tag", "location update stopped");
     }
@@ -521,47 +531,15 @@ public class GoogleMapsActivity extends AppCompatActivity
                 bottomSheetHandler.showCollapsed();
             }
         }, 500);
-    
-        // создание кружка, внутри которого будут флажки
-        circle = googleMap.addCircle(new CircleOptions()
-                .center(new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude()))
-                .radius(100)
-                .strokeColor(getResources().getColor(android.R.color.holo_purple)));
         
         
-        
-        // запрос на начало игры
-        
-//        JSONObject jo = new JSONObject();
-//        try {
-//            jo.put("type", "startGame");
-//            jo.put("lat", myLastLocation.getLatitude());
-//            jo.put("lng", myLastLocation.getLongitude());
-//            
-//            JSONObject setup = new JSONObject();
-//            setup.put("teamColors", new JSONArray(teamColors));
-//            
-//            JSONArray jFlags = new JSONArray();
-//            for (Flag flag : flags.values()) {
-//                jFlags.put(flag.getJson());
-//            }
-//            setup.put("flags", jFlags);
-//            
-//            jo.put("setupGameInfo", setup);
-//            
-//        } catch (JSONException ignored) {
-//        }
-//        TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-//            @Override
-//            public void onFailure(String error) {
-//                
-//            }
-//            
-//            @Override
-//            public void onResponse(JSONObject message) {
-//                startPlayersUpdates();
-//            }
-//        });
+        if (createGame) {
+            // создание кружка, внутри которого будут флажки
+            circle = googleMap.addCircle(new CircleOptions()
+                    .center(new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude()))
+                    .radius(100)
+                    .strokeColor(getResources().getColor(android.R.color.holo_purple)));
+        }
         
         startPlayersUpdates();
     }
@@ -802,7 +780,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     addPlayer(p);
                     
-                    
+                    // если есть куда ставить маркер
                     if (p.hasCoords()) {
                         // обновление маркера
                         if (p.hasMarker()) {
@@ -822,7 +800,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                         }
                         markerToFlagMap.clear();
                         flags.clear();
-                        
+    
                         JSONArray ja = jo.getJSONArray("flags");
                         for (int i = 0; i < ja.length(); i++) {
                             Flag flag = new Flag(ja.getJSONObject(i));
@@ -830,6 +808,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                             createFlagMarker(flag);
                         }
                     }
+                    if (circle != null)
+                        circle.remove();
     
                     // закрываем bottom_sheet
                     bottomSheetHandler.hide();
@@ -877,14 +857,15 @@ public class GoogleMapsActivity extends AppCompatActivity
                     Player pll = playersMap.get(jo.getString("login"));
                     updatePlayer(pll, jo.getInt("team_color"));
                     
-                    
-                    pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
+                    if (pll.hasCoords())
+                        pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
                     
                     break;
                 case "activate_flag":
+                    energyBlockHandler.setEnergy(jo.getInt("sync_energy"));
+                    energyBlockHandler.setSpeed(jo.getInt("sync_energy_speed"));
                     pickFlag(flags.get(jo.getInt("number")), jo.getInt("cost"));
-                
-                
+                    break;
                 default:
                     Toast.makeText(GoogleMapsActivity.this, "TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
             }
@@ -1038,7 +1019,12 @@ public class GoogleMapsActivity extends AppCompatActivity
         stopLocationUpdates();
         stopPlayersUpdates();
         TcpClient.getInstance().stopClient();
+        TcpClient.instance = null;
         TcpClientFake.getInstance().stopClient();
+        TcpClientFake.instance = null;
+        
+        if (energyBlockHandler != null)
+            energyBlockHandler.timer.cancel();
         super.onDestroy();
     }
     
@@ -1133,69 +1119,6 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     //------------------ПЕРЕМЕННЫЕ С РЕАЛИЗОВАННЫМИ ИНТЕРФЕЙСАМИ------------------
     
-//    /**
-//     * Циклическое обновление состояния игроков
-//     */
-//    private final Runnable updatePlayersRunnable = new Runnable() {
-//        @Override
-//        public void run() {
-//            Log.d("my_tag", "in updatePLayersRunnable");
-//            // собираем свои данные
-//            JSONObject jo = new JSONObject();
-//            try {
-//                jo.put("type", "getPlayerLocations");
-//                jo.put("lat", myLastLocation.getLatitude());
-//                jo.put("lng", myLastLocation.getLongitude());
-//
-////                // собираем флаги
-////                JSONArray jFlags = new JSONArray();
-////                for (Flag flag : flags) {
-////                    jFlags.put(flag.getJson());
-////                }
-////                jo.put("flags", jFlags);
-//                
-//            } catch (JSONException ignored) {
-//            }
-//            // отправляем запрос на получение данных игроков
-//            TcpClientFake.getInstance().httpRequest(jo, new HttpListener() {
-//                @Override
-//                public void onResponse(JSONObject message) {
-//                    try {
-//                        // обновляем игроков
-//                        JSONArray ja = message.getJSONArray("players");
-//                        for (int i = 0; i < ja.length(); i++) {
-//                            JSONObject jo = ja.getJSONObject(i);
-//                            
-//                            // создаём новый объект пользователя по json
-//                            Player p = new Player(jo);
-//                            Log.d("my_tag", "player received: " + p);
-//                            
-//                            playersMap.put(p.login, p);
-//                            // Если этот пользователь есть на карте - анимируем его положение. Иначе - добавляем
-//                            if (playerMarkersMap.containsKey(jo.getString("name"))) {
-//                                updatePlayerMarker(playerMarkersMap.get(p.login), p);
-//                            } else {
-//                                createPlayerMarker(p);
-//                            }
-//                        }
-//                        
-//                        
-//                    } catch (JSONException ignored) {
-//                    }
-//                    
-//                    // ПОЧЕМУ БЕЗ ЭТОГО ВСЁ ВИСНЕТ?????????? (наверное потому что это было в цикле...)
-//                    updatePlayersHandler.removeCallbacks(updatePlayersRunnable);
-//                    
-//                    updatePlayersHandler.postDelayed(updatePlayersRunnable, 2000);
-//                }
-//                
-//                @Override
-//                public void onFailure(String error) {
-//                    
-//                }
-//            });
-//        }
-//    };
     
     /**
      * Регулярное обновление местоположения.
@@ -1241,9 +1164,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                 jo.put("login", myPlayer.login);
                 
                 TcpClient.getInstance().sendMessage(jo);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            } catch (JSONException e) {}
             
         }
     };

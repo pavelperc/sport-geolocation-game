@@ -68,7 +68,7 @@ class TcpClient {
     
     private List<TcpMessageListener> messageListeners = new ArrayList<>();
     
-    private static TcpClient instance;
+    static TcpClient instance;
     
     // HTTP:
     private OkHttpClient client;

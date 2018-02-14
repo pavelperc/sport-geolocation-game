@@ -45,12 +45,16 @@ public class BottomSheetHandler {
     int energyFlagCost;
     
     
-    /** Линия от флажка до нашего игрока*/
+    /**
+     * Линия от флажка до нашего игрока
+     */
     Polyline line;
 
 //    private RelativeLayout rlMainScreen;
     
-    /** Если стоит true - то при случайном закрытии botton sheet снова открывается в состояние collapsed.*/
+    /**
+     * Если стоит true - то при случайном закрытии botton sheet снова открывается в состояние collapsed.
+     */
     boolean keepNotHidden = false;
     
     public BottomSheetHandler(final GoogleMapsActivity activity) {
@@ -83,16 +87,16 @@ public class BottomSheetHandler {
                 
                 
                 // если мы слишком быстро крутили вверх и окно не успело продвинуться
-                if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_COLLAPSED){
+                if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) rlMainScreen.getLayoutParams();
                     params.bottomMargin = maxMarginPx;
                     rlMainScreen.setLayoutParams(params);
                 }
-    
+                
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     arrow.setImageResource(R.drawable.ic_expand_arrow_down_black_24dp);
                 }
-    
+                
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     arrow.setImageResource(R.drawable.ic_expand_arrow_up_black_24dp);
                 }
@@ -143,7 +147,6 @@ public class BottomSheetHandler {
         final Button btnStartGame = (Button) activity.findViewById(R.id.btnStartGame);
         
         
-        
         btnStartGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,15 +160,15 @@ public class BottomSheetHandler {
                 
                 activity.tvRoomId.setVisibility(View.GONE);
                 hide();
-                prepareForFlags();
-                activity.energyBlockHandler = new EnergyBlockHandler(activity);
-    
+//                prepareForFlags();
+//                activity.energyBlockHandler = new EnergyBlockHandler(activity);
+                
                 // отправить флажки
                 
                 try {
                     JSONObject jo = new JSONObject();
                     jo.put("type", "start_game");
-                
+                    
                     JSONArray ja = new JSONArray();
                     for (Flag flag : activity.flags.values()) {
                         ja.put(flag.getJson());
@@ -174,10 +177,11 @@ public class BottomSheetHandler {
 
 //                    Log.d("my_tag", "JSON WITH FLAGS:\n" + jo.toString());
                     TcpClient.getInstance().sendMessage(jo);
-                } catch (JSONException ignored) {}
+                } catch (JSONException ignored) {
+                }
             }
         });
-    
+        
         btnGenerateFlags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,54 +189,56 @@ public class BottomSheetHandler {
                 activity.generateFlags((sbFlagsCount.getProgress() + 1) * activity.teamColors.size(), (sbCircleSize.getProgress() + 1) * 100);
                 // обновляем центр кружка
                 activity.circle.setCenter(activity.locToLL(activity.myLastLocation));
-            
+                
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 btnStartGame.setEnabled(true);
             }
         });
-    
+        
         sbCircleSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tvCircleSize.setText("" + (progress + 1) * 100);
                 activity.circle.setRadius((progress + 1) * 100);
             }
-        
+            
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-            
+                
             }
-        
+            
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-            
+                
             }
         });
-    
+        
         sbFlagsCount.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tvFlagsCount.setText("" + (progress + 1) * activity.teamColors.size());
             }
-        
+            
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-            
+                
             }
-        
+            
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-            
+                
             }
         });
-    
+        
         // максимальное количество флажков будет всегда 100, интервалы - различны 
         sbFlagsCount.setMax((100 - 1) / activity.teamColors.size());
         sbFlagsCount.setProgress(2);// value = (2+1)*teamsCount
     }
     
     
-    /** Настройка области для выбора команды*/
+    /**
+     * Настройка области для выбора команды
+     */
     private void setupChooseTeam() {
         Spinner spChooseTeam = (Spinner) activity.findViewById(R.id.spChooseTeam);
         
@@ -262,33 +268,35 @@ public class BottomSheetHandler {
         
         spChooseTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             boolean firstTime = true;
+            
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (firstTime) {
                     firstTime = false;
                     return;
                 }
-                activity.changeMyTeamColor(extendedTeamColors.get(position));
-//                try {
-//                    JSONObject jo = new JSONObject();
-//                    jo.put("login", activity.myProfile.getLogin());
-//                    jo.put("type", "choose_team");
-//                    jo.put("team_color", extendedTeamColors.get(position));
-//                    TcpClient.getInstance().sendMessage(jo);
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+//                activity.changeMyTeamColor(extendedTeamColors.get(position));
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("login", activity.myPlayer.login);
+                    jo.put("type", "choose_team");
+                    jo.put("team_color", extendedTeamColors.get(position));
+                    TcpClient.getInstance().sendMessage(jo);
+                    
+                } catch (JSONException e) {
+                }
             }
-    
+            
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-        
+                
             }
         });
     }
     
-    /** Настройка области со списком подключившихся игроков*/
+    /**
+     * Настройка области со списком подключившихся игроков
+     */
     private void setupTeamSharing() {
         RecyclerView rvTeamSharing = (RecyclerView) activity.findViewById(R.id.rv_team_sharing);
         
@@ -298,7 +306,6 @@ public class BottomSheetHandler {
 //        activity.players = teamSharingAdapter.getPlayers();
         rvTeamSharing.setAdapter(teamSharingAdapter);
     }
-    
     
     
     boolean isPreparedForFlags() {
@@ -323,17 +330,21 @@ public class BottomSheetHandler {
                 if (selectedFlag == null) {
                     return;
                 }
+
+//                activity.pickFlag(selectedFlag, energyFlagCost);
                 
-                activity.pickFlag(selectedFlag, energyFlagCost);
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", "activate_flag");
+                    jo.put("number", selectedFlag.number);
+                    jo.put("cost", energyFlagCost);
+                    jo.put("sync_energy", activity.energyBlockHandler.getEnergy());
+                    // без учёта нового флага
+                    jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
+                    TcpClient.getInstance().sendMessage(jo);
+                } catch (JSONException e) {
+                }
                 
-//                try {
-//                    JSONObject jo = new JSONObject();
-//                    jo.put("type", "activate_flag");
-//                    jo.put("number", selectedFlag.number);
-//                    jo.put("cost", energyFlagCost);
-//                    TcpClient.getInstance().sendMessage(jo);
-//                } catch (JSONException e) {}
-    
             }
         });
     }
@@ -344,19 +355,15 @@ public class BottomSheetHandler {
             return;
         
         selectedFlag = flag;
-        double dist = activity.myLastLocation.distanceTo(activity.llToLoc(flag.getPosition()));
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        
-        energyFlagCost = EnergyBlockHandler.getFlagCost(dist);
-        boolean canPickFlag = !flag.activated 
-                && flag.teamColor == activity.myPlayer.teamColor
-                && activity.energyBlockHandler.getEnergy() > energyFlagCost;
-        
-        btnPickFlag.setEnabled(canPickFlag);
     
-        tvFlagInfo.setText(String.format("флаг %d\nрасстояние: %.2fм\nактивирован: %s" +
-                "\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)", flag.number, dist, flag.activated ? "да" : "нет", energyFlagCost));
+    
+        // обновление кнопки, tvFlagInfo и расчёт расстояния и стоимости флага
+        updateSelectedFlagBar();
         
+        
+        
+        // обновление линии от нашего игрока до флага
         if (line != null)
             line.remove();
         
@@ -367,6 +374,24 @@ public class BottomSheetHandler {
     }
     
     
+    /** Обновление стоимости флага, текста с информацией о флаге, состояния кнопки активация флага*/
+    void updateSelectedFlagBar() {
+        if (selectedFlag == null || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN)
+            return;
+        
+        double dist = activity.myLastLocation.distanceTo(activity.llToLoc(selectedFlag.getPosition()));
+        energyFlagCost = EnergyBlockHandler.getFlagCost(dist);
+        
+        tvFlagInfo.setText(String.format("флаг %d\nрасстояние: %.2fм\nактивирован: %s" +
+                "\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)", selectedFlag.number, dist, selectedFlag.activated ? "да" : "нет", energyFlagCost));
+    
+    
+        boolean canPickFlag = !selectedFlag.activated
+                && selectedFlag.teamColor == activity.myPlayer.teamColor
+                && activity.energyBlockHandler.getEnergy() > energyFlagCost;
+    
+        btnPickFlag.setEnabled(canPickFlag);
+    }
     
     private int convertDpToPixels(float dp) {
         int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, activity.getResources().getDisplayMetrics());
