@@ -7,37 +7,71 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import okhttp3.HttpUrl;
+import java.util.Collections;
+import java.util.List;
 
 public class StartGameActivity extends AppCompatActivity {
     
     Profile profile;
     Location location;
-    
+    SeekBar sbTeamsNumber;
+    TextView tvTeamsNumber;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_game);
         profile = (Profile) getIntent().getSerializableExtra("profile");
+        
+        sbTeamsNumber = (SeekBar) findViewById(R.id.sbTeamsNumber);
+        tvTeamsNumber = (TextView) findViewById(R.id.tvTeamsNumber);
+        
+        sbTeamsNumber.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                tvTeamsNumber.setText(String.valueOf(progress + 1));
+            }
+    
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+        
+            }
+    
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+        
+            }
+        });
+        
     }
     
     public void btnCreateGameClick(View v) {
-        final ArrayList<Integer> teamColors = new ArrayList<>();
-        teamColors.add(Color.parseColor("#972EFF"));
-        teamColors.add(Color.parseColor("#FFF00D"));
+        List<Integer> teamColorsFull = new ArrayList<>();
     
+        teamColorsFull.add(Color.parseColor("#972eff"));// фиолет
+        teamColorsFull.add(Color.parseColor("#faed00"));// желтый
+        teamColorsFull.add(Color.parseColor("#00a8f3"));// голуб
+        teamColorsFull.add(Color.parseColor("#ff7f27"));// оранж
+        teamColorsFull.add(Color.parseColor("#0ed145"));// зелен
+        teamColorsFull.add(Color.parseColor("#ffaec8"));// розов
+        teamColorsFull.add(Color.parseColor("#d81118"));// красн
+        teamColorsFull.add(Color.parseColor("#3f48cc"));// синий
+        
+        Collections.shuffle(teamColorsFull);
+        
+        final ArrayList<Integer> teamColors = new ArrayList<>(teamColorsFull.subList(0, sbTeamsNumber.getProgress() + 1));
+        
+        
+        
         
         // отправка запроса на создание комнаты
         

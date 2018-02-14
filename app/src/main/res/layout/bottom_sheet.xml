@@ -30,7 +30,7 @@
             android:id="@+id/arrow"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            app:srcCompat="@drawable/ic_expand_less_black_24dp"/>
+            app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp"/>
 
         <LinearLayout
             android:id="@+id/ll_create_game"

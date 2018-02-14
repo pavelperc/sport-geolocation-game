@@ -74,6 +74,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
+import okhttp3.HttpUrl;
+
 public class GoogleMapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, TcpMessageListener {
     
@@ -102,8 +104,9 @@ public class GoogleMapsActivity extends AppCompatActivity
     Circle circle;
     
     private BottomSheetHandler bottomSheetHandler;
-    
-//    private int myTeamColor = Player.NO_TEAM_COLOR;
+    EnergyBlockHandler energyBlockHandler;
+        
+    //    private int myTeamColor = Player.NO_TEAM_COLOR;
     private Marker myLocationMarker;
     
     /** Последнее местоположение.*/
@@ -264,13 +267,58 @@ public class GoogleMapsActivity extends AppCompatActivity
         });
         
         TcpClient.getInstance().addMessageListener(this);
+        
+        
+        // добавлениие всех пользователей, подключившихся ранее
+        
+        if (!createGame) {
+            HttpUrl url = TcpClient.getUrlBuilder()
+                    .addPathSegment("get_players_in_room")
+                    .addQueryParameter("room_id", String.valueOf(roomId))
+                    .build();
+            TcpClient.getInstance().httpGetRequest(url, new HttpListener() {
+                @Override
+                public void onResponse(JSONObject message) {
+                    try {
+                        if (!message.getBoolean("status")) {
+                            Toast.makeText(GoogleMapsActivity.this, "server error in get_players_in_room:\n" 
+                                    + message.getString("error"), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        
+                        JSONArray ja = message.getJSONArray("players");
+    
+                        for (int i = 0; i < ja.length(); i++) {
+                            Player p = new Player(ja.getJSONObject(i));
+                            // не допускаем замены текущего игрока, так как потом невозможно будет найти объект myPLayer
+                            if (p.login.equals(myPlayer.login))
+                                continue;
+                            
+                            addPlayer(p);
+                        }
+                        
+                        
+                    } catch (JSONException e) {
+                        Toast.makeText(GoogleMapsActivity.this, "JSONException in get_players_in_room:\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+    
+                @Override
+                public void onFailure(String error) {
+                    
+                }
+            });
+    
+        }
+        
+        
     }
     
     /**
      * Вывести диалоговое окно
      *
      * @param error              Сообщение об ошибке
-     * @param connectionListener Слушатель для переподключения.
+     * @param connectionListener Слушатель для переподключения. может быть null
      */
     private void showConnectionErrorAlert(String error, final TcpConnectionListener connectionListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
@@ -747,6 +795,11 @@ public class GoogleMapsActivity extends AppCompatActivity
                     break;
                 case "new_player_in_room":
                     Player p = new Player(jo);
+    
+                    // не допускаем замены текущего игрока, так как потом невозможно будет найти объект myPLayer
+                    if (p.login.equals(myPlayer.login))
+                        return;
+                    
                     addPlayer(p);
                     
                     
@@ -782,7 +835,11 @@ public class GoogleMapsActivity extends AppCompatActivity
                     bottomSheetHandler.hide();
                     bottomSheetHandler.prepareForFlags();
                     
+                    energyBlockHandler = new EnergyBlockHandler(this);
+                    
+                    
                     Toast.makeText(this, "GAME STARTED!!!", Toast.LENGTH_SHORT).show();
+                    
                     break;
                 case "cords":
                     String login = jo.getString("login");
@@ -825,7 +882,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     break;
                 case "activate_flag":
-                    pickFlag(flags.get(jo.getInt("number")));
+                    pickFlag(flags.get(jo.getInt("number")), jo.getInt("cost"));
                 
                 
                 default:
@@ -838,7 +895,8 @@ public class GoogleMapsActivity extends AppCompatActivity
         }
     }
     
-    /** Добавляем в players и обновляем все списки. Маркеры не обновляются!*/
+    /** Добавляем в players и обновляем все списки. Маркеры не обновляются!
+     * Перед вызовом этого метода необходимо проверить, что мы не передаём клон myPlayer*/
     private void addPlayer(Player p) {
         // SortedList вызовет соответствующий notify если нужно
         players.add(p);
@@ -908,8 +966,9 @@ public class GoogleMapsActivity extends AppCompatActivity
     }
     
     /** Запускает анимацию захвата флага и обновляет все поля, но не посылает запрос серверу.
-     * (Предполагается, что запрос уже отправлен и подтверждён)*/
-    public void pickFlag(final Flag flag) {
+     * (Предполагается, что запрос уже отправлен и подтверждён)
+     * @param cost Стоимость флага в энергии*/
+    public void pickFlag(final Flag flag, int cost) {
         bottomSheetHandler.hideFlagBar();
         flag.activate();
         // перекрашиваем флаг в свой цвет
@@ -917,6 +976,12 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         // Красим кешированную картинку
         flag.getMarker().setIcon(getColoredImage(whiteFlagBitmap, flag.getColorWithActivation()));
+        
+        // изменение энергии, если это наша команда
+        if (flag.teamColor == myPlayer.teamColor) {
+            energyBlockHandler.addSpeed(1);
+            energyBlockHandler.addEnergy(-cost);
+        }
         
         
         // Анимация флага - подпрыгивание
@@ -1049,7 +1114,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         if (rlChat.getVisibility() == View.VISIBLE) {// скрыть 
             rlChat.setVisibility(View.GONE);
             b.setText("показ. чат");
-            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_more_black_24dp, 0);
+            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_arrow_down_black_24dp, 0);
             
             // сброс пропущенных сообщений
             missedMsgCount = 0;
@@ -1060,7 +1125,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         } else {// показать
             rlChat.setVisibility(View.VISIBLE);
             b.setText("скрыть чат");
-            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_less_black_24dp, 0);
+            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_arrow_up_black_24dp, 0);
             
             tvMissedMsg.setVisibility(View.INVISIBLE);
         }

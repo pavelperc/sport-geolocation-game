@@ -44,7 +44,7 @@ class TcpClient {
     
     static final String SERVER_IP = "92.63.105.60"; //server IP address
     //    private static final int SERVER_PORT_TCP = 7071;
-    static final int SERVER_PORT_HTTP = 6060;
+    static final int SERVER_PORT_HTTP = 7070;
     private volatile boolean isTcpRunning = false;
     private boolean isTryingToStop = false;
     
@@ -193,7 +193,7 @@ class TcpClient {
                     });
                     Log.d(SERVER_LOG, "Before loop");
                     int charsRead = 0;
-                    char[] buffer = new char[1024]; //choose your buffer size if you need other than 1024
+                    char[] buffer = new char[1048576]; //choose your buffer size if you need other than 1024
                     
                     // слушаем ответ от сервера. выходим из цикла только по исключениям
                     while (true) {

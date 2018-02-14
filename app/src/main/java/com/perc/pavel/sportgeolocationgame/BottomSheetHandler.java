@@ -1,28 +1,27 @@
 package com.perc.pavel.sportgeolocationgame;
 
-import android.graphics.Color;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +42,11 @@ public class BottomSheetHandler {
     TextView tvFlagInfo;
     Button btnPickFlag;
     private Flag selectedFlag;
+    int energyFlagCost;
+    
+    
+    /** Линия от флажка до нашего игрока*/
+    Polyline line;
 
 //    private RelativeLayout rlMainScreen;
     
@@ -53,6 +57,7 @@ public class BottomSheetHandler {
         this.activity = activity;
         // получение вью нижнего экрана
         LinearLayout llBottomSheet = (LinearLayout) activity.findViewById(R.id.bottom_sheet);
+        final ImageView arrow = (ImageView) activity.findViewById(R.id.arrow);
         // Экран активити с картой
         final RelativeLayout rlMainScreen = (RelativeLayout) activity.findViewById(R.id.rlMainScreen);
         
@@ -69,12 +74,29 @@ public class BottomSheetHandler {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN && keepNotHidden) {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
+                
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    // удаление линии от нашего игрока до флажка
+                    if (line != null)
+                        line.remove();
+                }
+                
+                
                 // если мы слишком быстро крутили вверх и окно не успело продвинуться
-                else if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_COLLAPSED){
+                if (newState == BottomSheetBehavior.STATE_EXPANDED || newState == BottomSheetBehavior.STATE_COLLAPSED){
                     CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) rlMainScreen.getLayoutParams();
                     params.bottomMargin = maxMarginPx;
                     rlMainScreen.setLayoutParams(params);
                 }
+    
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    arrow.setImageResource(R.drawable.ic_expand_arrow_down_black_24dp);
+                }
+    
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    arrow.setImageResource(R.drawable.ic_expand_arrow_up_black_24dp);
+                }
+                
             }
             
             @Override
@@ -136,9 +158,10 @@ public class BottomSheetHandler {
                 activity.tvRoomId.setVisibility(View.GONE);
                 hide();
                 prepareForFlags();
-                
+                activity.energyBlockHandler = new EnergyBlockHandler(activity);
+    
                 // отправить флажки
-            
+                
                 try {
                     JSONObject jo = new JSONObject();
                     jo.put("type", "start_game");
@@ -283,6 +306,9 @@ public class BottomSheetHandler {
     }
     
     void prepareForFlags() {
+        if (isPreparedForFlags())
+            return;
+        
         keepNotHidden = false;
         activity.findViewById(R.id.ll_flag_info).setVisibility(View.VISIBLE);
         activity.findViewById(R.id.ll_create_game).setVisibility(View.GONE);
@@ -298,12 +324,13 @@ public class BottomSheetHandler {
                     return;
                 }
                 
-                activity.pickFlag(selectedFlag);
+                activity.pickFlag(selectedFlag, energyFlagCost);
                 
 //                try {
 //                    JSONObject jo = new JSONObject();
 //                    jo.put("type", "activate_flag");
 //                    jo.put("number", selectedFlag.number);
+//                    jo.put("cost", energyFlagCost);
 //                    TcpClient.getInstance().sendMessage(jo);
 //                } catch (JSONException e) {}
     
@@ -317,15 +344,26 @@ public class BottomSheetHandler {
             return;
         
         selectedFlag = flag;
-        
         double dist = activity.myLastLocation.distanceTo(activity.llToLoc(flag.getPosition()));
-        
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         
-        btnPickFlag.setEnabled(dist < 40 && !flag.activated && flag.teamColor == activity.myPlayer.teamColor);
+        energyFlagCost = EnergyBlockHandler.getFlagCost(dist);
+        boolean canPickFlag = !flag.activated 
+                && flag.teamColor == activity.myPlayer.teamColor
+                && activity.energyBlockHandler.getEnergy() > energyFlagCost;
         
-        tvFlagInfo.setText(String.format("flag %d, distance: %.2f, activated: %b" +
-                "\n(distance should be < 40 for picking and flag shouldn't be activated and belong to other team)", flag.number, dist, flag.activated));
+        btnPickFlag.setEnabled(canPickFlag);
+    
+        tvFlagInfo.setText(String.format("флаг %d\nрасстояние: %.2fм\nактивирован: %s" +
+                "\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)", flag.number, dist, flag.activated ? "да" : "нет", energyFlagCost));
+        
+        if (line != null)
+            line.remove();
+        
+        line = activity.googleMap.addPolyline(new PolylineOptions()
+                .add(activity.locToLL(activity.myLastLocation), flag.getPosition())
+                .width(10)
+                .color(activity.getResources().getColor(R.color.energy_background_blue)));
     }
     
     
@@ -358,7 +396,9 @@ public class BottomSheetHandler {
     }
     
     void hideFlagBar() {
-        if (isPreparedForFlags())
-            hide();
+        if (!isPreparedForFlags())
+            return;
+        
+        hide();
     }
 }
