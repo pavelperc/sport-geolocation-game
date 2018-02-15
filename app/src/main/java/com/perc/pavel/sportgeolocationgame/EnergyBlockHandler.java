@@ -12,9 +12,13 @@ public class EnergyBlockHandler {
     
     static int INTERVAL_MS = 1000;
     
-    static int getFlagCost(double distance) {
-        int dist = (int) distance;
-        return dist * 2;
+    static int getFlagCost(Flag flag, double distance, int myTeamColor) {
+        int cost = (int) distance + 10;
+        if (flag.teamColor != myTeamColor)// если это флаг чужой команды
+            cost *= 2;
+        if (flag.activated)// если флаг уже активирован чужой комадой
+            cost *= 2;
+        return cost;
     }
     
     

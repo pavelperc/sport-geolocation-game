@@ -62,6 +62,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -453,8 +455,9 @@ public class GoogleMapsActivity extends AppCompatActivity
         for (int i = 0; i < flagsNumber; i++) {
             
 //            LatLng ll = new LatLng(lat + rnd.nextDouble() * delta - delta / 2, lng + rnd.nextDouble() * delta - delta / 2);
-    
-            LatLng llNew = FakeGps.getNextCoord(locToLL(myLastLocation), rnd.nextInt(360), rnd.nextInt(radius - 20) + 20);
+            
+            final int INNER_CIRCLE = 40;// не генерировать флажки ближе чем на 40 м
+            LatLng llNew = FakeGps.getNextCoord(locToLL(myLastLocation), rnd.nextInt(360), rnd.nextInt(radius - INNER_CIRCLE) + INNER_CIRCLE);
             
             int color = teamColors.get(i % teamColors.size());
             Flag flag = new Flag(llNew.latitude, llNew.longitude, color, i);
@@ -537,7 +540,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             // создание кружка, внутри которого будут флажки
             circle = googleMap.addCircle(new CircleOptions()
                     .center(new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude()))
-                    .radius(100)
+                    .radius((bottomSheetHandler.sbCircleSize.getProgress() + 1) * 100)
                     .strokeColor(getResources().getColor(android.R.color.holo_purple)));
         }
         
@@ -588,6 +591,11 @@ public class GoogleMapsActivity extends AppCompatActivity
         // Сами вычисляем направление игрока
         Location oldPos = llToLoc(marker.getPosition());
         Location newPos = llToLoc(p.getCoords());
+    
+        // проверка на то, что игрок сдвинулся
+        if (oldPos.getLatitude() == newPos.getLatitude() && oldPos.getLongitude() == newPos.getLongitude())
+            return;
+        
         float newBearing = oldPos.bearingTo(newPos);
         
         // Поворот маркера
@@ -862,12 +870,16 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     break;
                 case "activate_flag":
-                    energyBlockHandler.setEnergy(jo.getInt("sync_energy"));
-                    energyBlockHandler.setSpeed(jo.getInt("sync_energy_speed"));
-                    pickFlag(flags.get(jo.getInt("number")), jo.getInt("cost"));
+                    if (jo.has("sync_energy") && jo.has("sync_energy_speed")) {
+                        energyBlockHandler.setEnergy(jo.getInt("sync_energy"));
+                        energyBlockHandler.setSpeed(jo.getInt("sync_energy_speed"));
+                    }
+                    Flag flag = flags.get(jo.getInt("number"));
+                    
+                    pickFlag(flag, jo.optInt("cost", 0), jo.optInt("color_to_change", flag.teamColor));
                     break;
                 default:
-                    Toast.makeText(GoogleMapsActivity.this, "TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(GoogleMapsActivity.this, "Unknown TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
             }
             
         
@@ -948,21 +960,31 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     /** Запускает анимацию захвата флага и обновляет все поля, но не посылает запрос серверу.
      * (Предполагается, что запрос уже отправлен и подтверждён)
-     * @param cost Стоимость флага в энергии*/
-    public void pickFlag(final Flag flag, int cost) {
+     * @param cost Стоимость флага в энергии
+     * @param colorToChange Цвет команды, в который должен быть перекрашен флаг*/
+    public void pickFlag(final Flag flag, int cost, int colorToChange) {
         bottomSheetHandler.hideFlagBar();
+    
+        // изменение энергии, если это наша команда
+        if (colorToChange == myPlayer.teamColor) {
+            energyBlockHandler.addSpeed(1);
+            energyBlockHandler.addEnergy(-cost);
+        }
+        // если это был активированный флаг из нашей команды, а его хотят забрать
+        else if (flag.teamColor == myPlayer.teamColor && flag.activated) {
+            // уменьшаем скорость нашей энергии
+            energyBlockHandler.addSpeed(-1);
+        }
+        
+        
         flag.activate();
-        // перекрашиваем флаг в свой цвет
-        // flag.teamColor = myPlayer.teamColor;
+        // перекрашиваем флаг в нужный цвет
+        flag.teamColor = colorToChange;
         
         // Красим кешированную картинку
         flag.getMarker().setIcon(getColoredImage(whiteFlagBitmap, flag.getColorWithActivation()));
         
-        // изменение энергии, если это наша команда
-        if (flag.teamColor == myPlayer.teamColor) {
-            energyBlockHandler.addSpeed(1);
-            energyBlockHandler.addEnergy(-cost);
-        }
+        
         
         
         // Анимация флага - подпрыгивание
@@ -1137,9 +1159,13 @@ public class GoogleMapsActivity extends AppCompatActivity
             if (myLastLocation == null) {
                 myLastLocation = location;
                 onFirstLocationUpdate();
-            } else {
+                
+            }
+            // если поменялось моё местоположение
+            else if (myLastLocation.getLatitude() != location.getLatitude() || myLastLocation.getLongitude() != location.getLongitude()) {
                 // Сами вычисляем направление текущего игрока
                 float newBearing = myLastLocation.bearingTo(location);
+                
                 myLastLocation = location;
                 myLastLocation.setBearing(newBearing);
                 

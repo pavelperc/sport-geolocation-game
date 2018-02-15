@@ -103,7 +103,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:layout_weight="1"
-                    android:max="4"
+                    android:max="9"
                     android:progress="0"/>
 
                 <LinearLayout

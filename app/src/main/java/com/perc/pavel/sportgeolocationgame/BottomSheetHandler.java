@@ -6,6 +6,7 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,10 @@ public class BottomSheetHandler {
     private GoogleMapsActivity activity;
     PlayerListAdapter teamSharingAdapter;
     
+    SeekBar sbCircleSize;
+    SeekBar sbFlagsCount;
+    
+    
     TextView tvFlagInfo;
     Button btnPickFlag;
     private Flag selectedFlag;
@@ -48,7 +53,7 @@ public class BottomSheetHandler {
     /**
      * Линия от флажка до нашего игрока
      */
-    Polyline line;
+//    Polyline line;
 
 //    private RelativeLayout rlMainScreen;
     
@@ -80,9 +85,9 @@ public class BottomSheetHandler {
                 }
                 
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    // удаление линии от нашего игрока до флажка
-                    if (line != null)
-                        line.remove();
+//                    // удаление линии от нашего игрока до флажка
+//                    if (line != null)
+//                        line.remove();
                 }
                 
                 
@@ -139,8 +144,8 @@ public class BottomSheetHandler {
     
     
     private void setupCreateGame() {
-        final SeekBar sbCircleSize = (SeekBar) activity.findViewById(R.id.sbCircleSize);
-        final SeekBar sbFlagsCount = (SeekBar) activity.findViewById(R.id.sbFlagsCount);
+        sbCircleSize = (SeekBar) activity.findViewById(R.id.sbCircleSize);
+        sbFlagsCount = (SeekBar) activity.findViewById(R.id.sbFlagsCount);
         final TextView tvCircleSize = (TextView) activity.findViewById(R.id.tvCircleSize);
         final TextView tvFlagsCount = (TextView) activity.findViewById(R.id.tvFlagsCount);
         Button btnGenerateFlags = (Button) activity.findViewById(R.id.btnGenerateFlags);
@@ -174,8 +179,21 @@ public class BottomSheetHandler {
                         ja.put(flag.getJson());
                     }
                     jo.put("flags", ja);
-
-//                    Log.d("my_tag", "JSON WITH FLAGS:\n" + jo.toString());
+                    
+                    
+                    
+                    
+//                    Log.d("my_tag", "JSON WITH FLAGS:\n");
+//                    int maxLogSize = 1000;
+//                    String veryLongString = jo.toString();
+//                    for(int i = 0; i <= veryLongString.length() / maxLogSize; i++) {
+//                        int start = i * maxLogSize;
+//                        int end = (i+1) * maxLogSize;
+//                        end = end > veryLongString.length() ? veryLongString.length() : end;
+//                        Log.d("my_tag", veryLongString.substring(start, end));
+//                    }
+                    
+                    
                     TcpClient.getInstance().sendMessage(jo);
                 } catch (JSONException ignored) {
                 }
@@ -199,7 +217,8 @@ public class BottomSheetHandler {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tvCircleSize.setText("" + (progress + 1) * 100);
-                activity.circle.setRadius((progress + 1) * 100);
+                if (activity.circle != null)
+                    activity.circle.setRadius((progress + 1) * 100);
             }
             
             @Override
@@ -229,6 +248,7 @@ public class BottomSheetHandler {
                 
             }
         });
+        sbCircleSize.setProgress(1);// 200 м
         
         // максимальное количество флажков будет всегда 100, интервалы - различны 
         sbFlagsCount.setMax((100 - 1) / activity.teamColors.size());
@@ -337,9 +357,13 @@ public class BottomSheetHandler {
                     JSONObject jo = new JSONObject();
                     jo.put("type", "activate_flag");
                     jo.put("number", selectedFlag.number);
+                    // в цвет какой команды нужно перекрашивать
+                    jo.put("color_to_change", activity.myPlayer.teamColor);
+                    // количество энергии, нужное на захват флага
                     jo.put("cost", energyFlagCost);
+                    // текущая энергия команды до захвата флага
                     jo.put("sync_energy", activity.energyBlockHandler.getEnergy());
-                    // без учёта нового флага
+                    // скорость восстановления энергии без учёта нового флага
                     jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
                     TcpClient.getInstance().sendMessage(jo);
                 } catch (JSONException e) {
@@ -361,16 +385,6 @@ public class BottomSheetHandler {
         // обновление кнопки, tvFlagInfo и расчёт расстояния и стоимости флага
         updateSelectedFlagBar();
         
-        
-        
-        // обновление линии от нашего игрока до флага
-        if (line != null)
-            line.remove();
-        
-        line = activity.googleMap.addPolyline(new PolylineOptions()
-                .add(activity.locToLL(activity.myLastLocation), flag.getPosition())
-                .width(10)
-                .color(activity.getResources().getColor(R.color.energy_background_blue)));
     }
     
     
@@ -380,17 +394,28 @@ public class BottomSheetHandler {
             return;
         
         double dist = activity.myLastLocation.distanceTo(activity.llToLoc(selectedFlag.getPosition()));
-        energyFlagCost = EnergyBlockHandler.getFlagCost(dist);
+        energyFlagCost = EnergyBlockHandler.getFlagCost(selectedFlag, dist, activity.myPlayer.teamColor);
         
         tvFlagInfo.setText(String.format("флаг %d\nрасстояние: %.2fм\nактивирован: %s" +
                 "\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)", selectedFlag.number, dist, selectedFlag.activated ? "да" : "нет", energyFlagCost));
-    
-    
-        boolean canPickFlag = !selectedFlag.activated
-                && selectedFlag.teamColor == activity.myPlayer.teamColor
+        
+        
+        // флаг не может быть уже активированным нашей командой
+        // и на его захват должно быть достаточно энергии
+        boolean canPickFlag = !(selectedFlag.activated
+                && selectedFlag.teamColor == activity.myPlayer.teamColor)
                 && activity.energyBlockHandler.getEnergy() > energyFlagCost;
     
         btnPickFlag.setEnabled(canPickFlag);
+    
+//        // обновление линии от нашего игрока до флага
+//        if (line != null)
+//            line.remove();
+//    
+//        line = activity.googleMap.addPolyline(new PolylineOptions()
+//                .add(activity.locToLL(activity.myLastLocation), selectedFlag.getPosition())
+//                .width(10)
+//                .color(activity.getResources().getColor(R.color.energy_background_blue)));
     }
     
     private int convertDpToPixels(float dp) {

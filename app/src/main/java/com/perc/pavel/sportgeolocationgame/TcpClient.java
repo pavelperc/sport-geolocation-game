@@ -193,13 +193,16 @@ class TcpClient {
                     });
                     Log.d(SERVER_LOG, "Before loop");
                     int charsRead = 0;
-                    char[] buffer = new char[1048576]; //choose your buffer size if you need other than 1024
+                    char[] buffer = new char[20000]; //choose your buffer size if you need other than 1024
                     
                     // слушаем ответ от сервера. выходим из цикла только по исключениям
                     while (true) {
                         Log.d(SERVER_LOG, "begin loop");
                         
                         charsRead = mBufferIn.read(buffer);
+                        if (charsRead <= 0)
+                            continue;
+                        
                         final String serverMessage = new String(buffer).substring(0, charsRead);
                         
                         Log.d(SERVER_LOG, "read server msg");
