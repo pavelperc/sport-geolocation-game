@@ -2,6 +2,8 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,11 +95,20 @@ class TcpClient {
     void sendMessage(final JSONObject message) {
         new Thread(new Runnable() {
             @Override
-            public void run() {
+            synchronized public void run() {
                 if (mBufferOut != null && !mBufferOut.checkError()) {
-                    mBufferOut.write(message.toString());
+                    //mBufferOut.write(message.toString());
+                    //mBufferOut.flush();
+                    
+                    String str = message.toString();
+                    int bufferSize = 1024;
+                    for (int i = 0; i < str.length(); i += bufferSize) {
+                        mBufferOut.write(str.substring(i, Math.min(i + bufferSize, str.length())));
+                        mBufferOut.flush();
+                    }
+                    mBufferOut.write("\n");
                     mBufferOut.flush();
-                    Log.d(SERVER_LOG, "Sent message: " + message.toString());
+                    Log.d("my_tag", "Sent message: " + message.toString());
                 }
             }
         }).start();
@@ -115,13 +126,13 @@ class TcpClient {
         if (mBufferOut != null) {
             mBufferOut.flush();
             mBufferOut.close();
-            Log.d(SERVER_LOG, "closed buffer out.");
+//            Log.d(SERVER_LOG, "closed buffer out.");
             
         }
         if (mBufferIn != null) {
             try {
                 mBufferIn.close();
-                Log.d(SERVER_LOG, "closed buffer in.");
+//                Log.d(SERVER_LOG, "closed buffer in.");
             } catch (IOException e) {
                 Log.d(SERVER_LOG, "error in closing mBufferIn");
             }
@@ -191,21 +202,19 @@ class TcpClient {
                             tcpConnectionListener.onConnected();
                         }
                     });
-                    Log.d(SERVER_LOG, "Before loop");
-                    int charsRead = 0;
-                    char[] buffer = new char[20000]; //choose your buffer size if you need other than 1024
+//                    Log.d(SERVER_LOG, "Before loop");
                     
                     // слушаем ответ от сервера. выходим из цикла только по исключениям
                     while (true) {
-                        Log.d(SERVER_LOG, "begin loop");
+//                        Log.d(SERVER_LOG, "loop begin");
                         
-                        charsRead = mBufferIn.read(buffer);
-                        if (charsRead <= 0)
+                        
+                        
+                        final String serverMessage = mBufferIn.readLine();
+                        if (serverMessage == null || serverMessage.equals("") || serverMessage.equals("\n"))
                             continue;
                         
-                        final String serverMessage = new String(buffer).substring(0, charsRead);
-                        
-                        Log.d(SERVER_LOG, "read server msg");
+//                        Log.d(SERVER_LOG, "read server msg");
                         
                         handler.post(new Runnable() {
                             @Override
@@ -226,7 +235,7 @@ class TcpClient {
                             }
                         });
                         
-                        Log.d(SERVER_LOG, "loop iteration ended.");
+//                        Log.d(SERVER_LOG, "loop iteration ended.");
                     }// end of loop
                 } catch (final IOException e) {// когда не достучались до сервера или закрыли выходной поток
                     Log.d(SERVER_LOG, "IOException: " + e.getMessage() + " in---> " + Arrays.toString(e.getStackTrace()));
@@ -348,5 +357,11 @@ class TcpClient {
                 });
             }
         });
+    }
+    
+    public void sendMessage(JSONObject jo, ProgressBar pbLoading) {
+        
+        pbLoading.setVisibility(View.VISIBLE);
+        sendMessage(jo);
     }
 }

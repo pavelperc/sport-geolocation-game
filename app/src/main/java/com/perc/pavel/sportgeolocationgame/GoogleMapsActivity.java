@@ -39,6 +39,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -141,11 +142,14 @@ public class GoogleMapsActivity extends AppCompatActivity
     MyTeammatesAdapter myTeammatesAdapter;
     List<Player> myTeammates;
     
+//    ProgressBar pbLoading;
+    
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_maps);
-    
+//        pbLoading = (ProgressBar) findViewById(R.id.pbLoading); 
     
         // Загружаем в оперативную память значок флажка
         whiteFlagBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.white_flag);
@@ -304,6 +308,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                     jo.put("type", "connection");
                     jo.put("login", myPlayer.login);
                     TcpClient.getInstance().sendMessage(jo);
+                    
+                    
                 } catch (JSONException ignored) {
                 }
             }
@@ -320,8 +326,9 @@ public class GoogleMapsActivity extends AppCompatActivity
                 }
             }
         });
-    
+        
         TcpClient.getInstance().addMessageListener(this);
+        
     }
     
     
@@ -429,7 +436,6 @@ public class GoogleMapsActivity extends AppCompatActivity
             fusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
         } catch (SecurityException ignored) {
         }
-        ;
         
         Log.d("my_tag", "location update started");
         
@@ -544,7 +550,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     .strokeColor(getResources().getColor(android.R.color.holo_purple)));
         }
         
-        startPlayersUpdates();
+        //startPlayersUpdates();
     }
     
     private void startPlayersUpdates() {
@@ -773,8 +779,12 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     @Override
     public void onTCPMessageReceived(JSONObject jo) {
+//        pbLoading.setVisibility(View.GONE);
         try {
             Log.d("my_tag", "tcp received: " + jo.toString());
+            if (jo.toString().equals("{\"status\":\"Connection successfull\"}"))
+                return;
+            
             switch (jo.getString("type")) {
                 case "message_chat":
                     addMessageToChat(jo.getString("message"), jo.getString("name"));
@@ -833,7 +843,6 @@ public class GoogleMapsActivity extends AppCompatActivity
                     String login = jo.getString("login");
                     // если отослали не мы
                     if (!login.equals(myPlayer.login)) {
-    
                         Player pl;
                         // если такой игрок присутствует
                         if (playersMap.containsKey(login)) {
@@ -1150,47 +1159,47 @@ public class GoogleMapsActivity extends AppCompatActivity
         public void onLocationResult(LocationResult locationResult) {
             Location location = locationResult.getLastLocation();
             
-            Log.d("my_tag", "got location result: ("
-                    + location.getLatitude() + "," + location.getLongitude()
-                    + ") bearing = " + location.getBearing()
-                    + "accuracy = " + location.getAccuracy());
-            
+//            Log.d("my_tag", "got location result: ("
+//                    + location.getLatitude() + "," + location.getLongitude()
+//                    + ") bearing = " + location.getBearing()
+//                    + "accuracy = " + location.getAccuracy());
+//            
             
             if (myLastLocation == null) {
                 myLastLocation = location;
                 onFirstLocationUpdate();
                 
             }
-            // если поменялось моё местоположение
-            else if (myLastLocation.getLatitude() != location.getLatitude() || myLastLocation.getLongitude() != location.getLongitude()) {
-                // Сами вычисляем направление текущего игрока
-                float newBearing = myLastLocation.bearingTo(location);
+            else {
+                // отпраляем координаты на сервер, пропустив первую отправку, так как серверу сначала нужно отправить connection
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", "cords");
+                    jo.put("lat", location.getLatitude());
+                    jo.put("lng", location.getLongitude());
+                    jo.put("login", myPlayer.login);
+        
+                    TcpClient.getInstance().sendMessage(jo);
+                } catch (JSONException e) {}
                 
-                myLastLocation = location;
-                myLastLocation.setBearing(newBearing);
-                
-                // Поворот маркера
-                myLocationMarker.setRotation(location.getBearing());
-                
-                // Анимация маркера
-                ValueAnimator markerAnimator = ObjectAnimator.ofObject(myLocationMarker, "position",
-                        new LatLngEvaluator(), myLocationMarker.getPosition(), locToLL(myLastLocation));
-                markerAnimator.setDuration(500);
-                markerAnimator.start();
+                // если поменялось моё местоположение - обновляем его на карте
+                if (myLastLocation.getLatitude() != location.getLatitude() || myLastLocation.getLongitude() != location.getLongitude()) {
+                    // Сами вычисляем направление текущего игрока
+                    float newBearing = myLastLocation.bearingTo(location);
+                    
+                    myLastLocation = location;
+                    myLastLocation.setBearing(newBearing);
+    
+                    // Поворот маркера
+                    myLocationMarker.setRotation(location.getBearing());
+    
+                    // Анимация маркера
+                    ValueAnimator markerAnimator = ObjectAnimator.ofObject(myLocationMarker, "position",
+                            new LatLngEvaluator(), myLocationMarker.getPosition(), locToLL(myLastLocation));
+                    markerAnimator.setDuration(500);
+                    markerAnimator.start();
+                }
             }
-            
-            
-            // отпраляем координаты на сервер
-            
-            try {
-                JSONObject jo = new JSONObject();
-                jo.put("type", "cords");
-                jo.put("lat", location.getLatitude());
-                jo.put("lng", location.getLongitude());
-                jo.put("login", myPlayer.login);
-                
-                TcpClient.getInstance().sendMessage(jo);
-            } catch (JSONException e) {}
             
         }
     };
