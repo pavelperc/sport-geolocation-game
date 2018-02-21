@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -54,7 +56,17 @@ public class EnterActivity extends AppCompatActivity {
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         chbFakeGps = (CheckBox) findViewById(R.id.chbFakeGps);
         etStartGps = (EditText) findViewById(R.id.etStartGps);
-    
+
+        Typeface myCustomFont = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        etLogin.setTypeface(myCustomFont);
+        etPassword.setTypeface(myCustomFont);
+
+        TextInputLayout animLogin = (TextInputLayout)findViewById(R.id.animLogin);
+        animLogin.setHintEnabled(false);
+
+        TextInputLayout animPassword = (TextInputLayout)findViewById(R.id.animPassword);
+        animPassword.setHintEnabled(false);
+
         etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

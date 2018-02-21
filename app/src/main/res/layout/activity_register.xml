@@ -1,87 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.perc.pavel.sportgeolocationgame.RegisterActivity"
-    android:orientation="vertical">
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:weightSum="100"
+    tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity"
+    android:background="@color/colorPrimaryDark">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="10dp"
-        android:background="@drawable/shape_grey_rect_border"
+        android:layout_height="match_parent"
+        android:layout_weight="60"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:weightSum="100">
 
-        <android.support.design.widget.TextInputLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_centerVertical="true"
+                app:srcCompat="@drawable/icon_app"/>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="40"
+        android:orientation="vertical">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="324dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#F3F3F3"
+            android:textColorHint="#F3F3F3"
+            android:id="@+id/animName">
 
             <EditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:ems="10"
-                android:hint="Имя"
-                android:inputType="textPersonName"/>
+                android:textSize="20sp"
+                android:hint="NAME"
+                android:inputType="textPersonName"
+                android:orientation="vertical"
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3"
+                android:paddingBottom="20dp"/>
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="324dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#F3F3F3"
+            android:textColorHint="#F3F3F3"
+            android:id="@+id/animLogin">
 
             <EditText
                 android:id="@+id/etLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:ems="10"
-                android:hint="Логин"
-                android:inputType="text"/>
+                android:textSize="20sp"
+                android:hint="USERNAME"
+                android:inputType="text"
+                android:orientation="vertical"
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3"
+                android:paddingBottom="20dp"/>
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:passwordToggleEnabled="true">
+            android:layout_width="324dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:passwordToggleEnabled="true"
+            android:textColor="#F3F3F3"
+            android:textColorHint="#F3F3F3"
+            app:passwordToggleTint="@color/colorAccent"
+            android:id="@+id/animPassword">
 
-            <EditText
+            <android.support.design.widget.TextInputEditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_toStartOf="@+id/btnEye"
-                android:layout_weight="1"
                 android:ems="10"
-                android:hint="Пароль"
-                android:imeOptions="actionGo"
-                android:inputType="textPassword"/>
+                android:layout_toStartOf="@+id/btnEye"
+                android:hint="PASSWORD"
+                android:inputType="textPassword"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical"
+                android:textSize="20sp"
+                android:paddingBottom="20dp"
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3"
+                android:imeOptions="actionGo"/>
         </android.support.design.widget.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnRegister"
-            style="@style/Widget.AppCompat.Button"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="btnRegisterClick"
-            android:text="Зарегистрироваться"
-            android:textAppearance="@style/TextAppearance.AppCompat.Button"
-            android:textSize="18sp"/>
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/register_style"
+                android:onClick="btnRegisterClick" />
+
+        </RelativeLayout>
+
     </LinearLayout>
 
-    <ProgressBar
-        android:id="@+id/pbLoading"
-        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:visibility="gone"/>
-
-</RelativeLayout>
+</LinearLayout>

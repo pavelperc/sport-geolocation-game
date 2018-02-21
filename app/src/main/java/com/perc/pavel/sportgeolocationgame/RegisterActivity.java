@@ -2,6 +2,8 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -37,6 +39,20 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword = (EditText) findViewById(R.id.etPassword);
         etName = (EditText) findViewById(R.id.etName);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+
+        Typeface myCustomFont = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        etName.setTypeface(myCustomFont);
+        etLogin.setTypeface(myCustomFont);
+        etPassword.setTypeface(myCustomFont);
+
+        TextInputLayout animLogin = (TextInputLayout)findViewById(R.id.animLogin);
+        animLogin.setHintEnabled(false);
+
+        TextInputLayout animPassword = (TextInputLayout)findViewById(R.id.animPassword);
+        animPassword.setHintEnabled(false);
+
+        TextInputLayout animName = (TextInputLayout)findViewById(R.id.animName);
+        animName.setHintEnabled(false);
     
         etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
