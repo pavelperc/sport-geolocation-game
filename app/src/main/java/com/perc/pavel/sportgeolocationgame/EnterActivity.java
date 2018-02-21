@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -42,6 +43,9 @@ public class EnterActivity extends AppCompatActivity {
     EditText etLogin;
     EditText etPassword;
     ProgressBar pbLoading;
+    Button btnForgot;
+    Button btnRegister;
+    Button btnEnter;
     
     CheckBox chbFakeGps;
     EditText etStartGps;
@@ -56,10 +60,20 @@ public class EnterActivity extends AppCompatActivity {
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         chbFakeGps = (CheckBox) findViewById(R.id.chbFakeGps);
         etStartGps = (EditText) findViewById(R.id.etStartGps);
+        btnRegister = (Button) findViewById(R.id.btnRegister);
+        btnForgot = (Button) findViewById(R.id.btnForgot);
+        btnEnter = (Button) findViewById(R.id.btnEnter);
 
-        Typeface myCustomFont = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
-        etLogin.setTypeface(myCustomFont);
-        etPassword.setTypeface(myCustomFont);
+        Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        etLogin.setTypeface(Matiz);
+        etPassword.setTypeface(Matiz);
+
+        Typeface PhosphateInline = Typeface.createFromAsset(getAssets(), "fonts/PhosphateInline.ttf");
+        btnForgot.setTypeface(PhosphateInline);
+        btnRegister.setTypeface(PhosphateInline);
+
+        Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
+        btnEnter.setTypeface(PhosphateSolid);
 
         TextInputLayout animLogin = (TextInputLayout)findViewById(R.id.animLogin);
         animLogin.setHintEnabled(false);

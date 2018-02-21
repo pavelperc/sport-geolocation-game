@@ -117,8 +117,11 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_gravity="center_horizontal"
-                android:background="@drawable/register_style"
-                android:onClick="btnRegisterClick" />
+                android:onClick="btnRegisterClick"
+                android:background="@drawable/log_in_style"
+                android:text="REGISTER"
+                android:textColor="@color/colorPrimary"
+                android:textSize="30sp"/>
 
         </RelativeLayout>
 

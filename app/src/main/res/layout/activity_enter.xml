@@ -102,7 +102,11 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:background="@drawable/log_in_style"
-                    android:onClick="btnEnterClick"/>
+                    android:onClick="btnEnterClick"
+                    android:layout_centerHorizontal="true"
+                    android:text="LOG IN"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="30sp"/>
 
                 <Button
                     android:id="@+id/btnVkRegister"
@@ -119,9 +123,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="18dp"
                 android:layout_below="@+id/loginLayout"
-                android:layout_marginTop="20dp"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/forgot_password_style"/>
+                android:layout_marginTop="20dp"
+                android:background="@color/colorPrimaryDark"
+                android:text="FORGOT PASSWORD"
+                android:textColor="@color/colorPrimary"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/btnRegister"
@@ -129,20 +136,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="18dp"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/new_account_style"
+                android:background="@color/colorPrimaryDark"
                 android:layout_centerHorizontal="true"
-                android:onClick="btnRegisterClick"/>
-
-            <ProgressBar
-                android:id="@+id/pbLoading"
-                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
+                android:onClick="btnRegisterClick"
+                android:text="CREATE NEW ACCOUNT"
+                android:textColor="@color/colorPrimary"
+                android:textSize="20sp" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
+                <ProgressBar
+                    android:id="@+id/pbLoading"
+                    style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etPassword;
     private EditText etName;
     private ProgressBar pbLoading;
+    private Button btnRegister;
     
 
     @Override
@@ -40,10 +42,15 @@ public class RegisterActivity extends AppCompatActivity {
         etName = (EditText) findViewById(R.id.etName);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
 
-        Typeface myCustomFont = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
-        etName.setTypeface(myCustomFont);
-        etLogin.setTypeface(myCustomFont);
-        etPassword.setTypeface(myCustomFont);
+        btnRegister = (Button) findViewById(R.id.btnRegister);
+
+        Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        etName.setTypeface(Matiz);
+        etLogin.setTypeface(Matiz);
+        etPassword.setTypeface(Matiz);
+
+        Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
+        btnRegister.setTypeface(PhosphateSolid);
 
         TextInputLayout animLogin = (TextInputLayout)findViewById(R.id.animLogin);
         animLogin.setHintEnabled(false);
