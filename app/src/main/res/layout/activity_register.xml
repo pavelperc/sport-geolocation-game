@@ -118,7 +118,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_gravity="center_horizontal"
                 android:onClick="btnRegisterClick"
-                android:background="@drawable/log_in_style"
+                android:background="@drawable/register_style"
                 android:text="REGISTER"
                 android:textColor="@color/colorPrimary"
                 android:textSize="30sp"/>

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.perc.pavel.sportgeolocationgame.StartGameActivity"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.perc.pavel.sportgeolocationgame.StartGameActivity">
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:weightSum="100"
+    android:background="@color/colorPrimaryDark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,7 +16,6 @@
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:layout_margin="10dp"
-        android:background="@drawable/shape_grey_rect_border"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -70,4 +72,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>
