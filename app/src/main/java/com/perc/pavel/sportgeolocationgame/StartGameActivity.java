@@ -2,10 +2,12 @@ package com.perc.pavel.sportgeolocationgame;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,8 +26,13 @@ public class StartGameActivity extends AppCompatActivity {
     Profile profile;
     Location location;
     SeekBar sbTeamsNumber;
+    TextView tvTeams;
     TextView tvTeamsNumber;
-    
+    TextView profileName;
+    EditText etRoomId;
+    Button btnJoinGame;
+    Button btnCreateGame;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +40,22 @@ public class StartGameActivity extends AppCompatActivity {
         profile = (Profile) getIntent().getSerializableExtra("profile");
         
         sbTeamsNumber = (SeekBar) findViewById(R.id.sbTeamsNumber);
+        tvTeams = (TextView) findViewById(R.id.tvTeams);
         tvTeamsNumber = (TextView) findViewById(R.id.tvTeamsNumber);
+        profileName = (TextView) findViewById(R.id.profileName);
+        etRoomId = (EditText) findViewById(R.id.etRoomId);
+        btnJoinGame = (Button) findViewById(R.id.btnJoinGame);
+        btnCreateGame = (Button) findViewById(R.id.btnCreateGame);
+
+        Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        etRoomId.setTypeface(Matiz);
+        tvTeams.setTypeface(Matiz);
+        tvTeamsNumber.setTypeface(Matiz);
+
+        Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
+        profileName.setTypeface(PhosphateSolid);
+        btnJoinGame.setTypeface(PhosphateSolid);
+        btnCreateGame.setTypeface(PhosphateSolid);
         
         sbTeamsNumber.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override

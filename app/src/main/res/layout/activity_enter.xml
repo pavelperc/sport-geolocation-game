@@ -103,7 +103,6 @@
                     android:layout_gravity="center_horizontal"
                     android:background="@drawable/log_in_style"
                     android:onClick="btnEnterClick"
-                    android:layout_centerHorizontal="true"
                     android:text="LOG IN"
                     android:textColor="@color/colorPrimary"
                     android:textSize="30sp"/>

@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:textSize="20sp"
-                android:hint="NAME"
+                android:hint="NICKNAME"
                 android:inputType="textPersonName"
                 android:orientation="vertical"
                 android:textColor="#F3F3F3"

@@ -21,40 +21,30 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/profileName"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:maxWidth="380dp"
+                android:maxLines="2"
+                android:text="Вадим"
+                android:layout_gravity="top"
+                android:layout_centerHorizontal="true"
+                android:textAllCaps="true"
+                android:textAlignment="center"
+                android:textColor="#F3F3F3"
+                android:textSize="30sp"
+                tools:layout_editor_absoluteX="0dp"/>
+
+            <ImageView
+                android:id="@+id/imageViewProfile"
+                android:layout_width="146dp"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:orientation="horizontal"
-                android:id="@+id/layoutProfile">
-
-                <ImageView
-                    android:id="@+id/imageViewProfile"
-                    android:layout_width="146dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginRight="15dp"
-                    app:srcCompat="@drawable/profile" />
-
-                <TextView
-                    android:id="@+id/profileName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="45dp"
-                    android:text="TextView"
-                    android:textColor="#F3F3F3"
-                    android:textSize="30sp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/profileGP"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="45dp"
-                android:layout_below="@+id/layoutProfile"
-                android:text="TextView"
-                android:textColor="#F3F3F3"
-                android:textSize="30sp" />
+                android:layout_marginTop="10dp"
+                android:layout_below="@+id/profileName"
+                app:srcCompat="@drawable/profile" />
 
         </RelativeLayout>
 
@@ -66,56 +56,77 @@
         android:layout_weight="40"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnCreateGame"
-            android:layout_width="match_parent"
+        <EditText
+            android:id="@+id/etRoomId"
+            android:layout_width="324dp"
             android:layout_height="wrap_content"
-            android:onClick="btnCreateGameClick"
-            android:text="Создать игру"/>
+            android:layout_gravity="center_horizontal"
+            android:ems="10"
+            android:hint="ROOM ID"
+            android:inputType="number"
+            android:textColor="#F3F3F3"
+            android:textColorHint="#F3F3F3"
+            android:textSize="20sp"
+            android:paddingBottom="20dp" />
+
+        <Button
+            android:id="@+id/btnJoinGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:onClick="btnJoinGameClick"
+            android:background="@drawable/join_style"
+            android:text="JOIN"
+            android:textColor="@color/colorPrimary"
+            android:textSize="30sp"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp">
 
             <TextView
-                android:id="@+id/textView5"
-                android:layout_width="156dp"
+                android:id="@+id/tvTeams"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Количество команд:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+                android:text="TEAMS NUMBER: "
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3"
+                android:textSize="25sp" />
 
             <TextView
                 android:id="@+id/tvTeamsNumber"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="2"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3"
+                android:textSize="25sp" />
         </LinearLayout>
 
         <SeekBar
             android:id="@+id/sbTeamsNumber"
             style="@style/Widget.AppCompat.SeekBar.Discrete"
-            android:layout_width="match_parent"
+            android:layout_width="330dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
             android:max="7"
             android:progress="1"/>
 
         <Button
-            android:id="@+id/btnJoinGame"
-            android:layout_width="match_parent"
+            android:id="@+id/btnCreateGame"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="btnJoinGameClick"
-            android:text="Подключиться к игре по ID:"/>
-
-        <EditText
-            android:id="@+id/etRoomId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="room id"
-            android:inputType="number"
-            android:text="123"/>
+            android:onClick="btnCreateGameClick"
+            android:text="CREATE GAME"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/register_style"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="5dp"
+            android:textSize="30sp"/>
 
     </LinearLayout>
 
