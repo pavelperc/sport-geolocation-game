@@ -28,7 +28,7 @@
                 android:layout_marginTop="20dp"
                 android:maxWidth="380dp"
                 android:maxLines="2"
-                android:text="Nickname"
+                android:text="MainMenu"
                 android:layout_gravity="top"
                 android:layout_centerHorizontal="true"
                 android:textAllCaps="true"
@@ -56,73 +56,49 @@
         android:layout_weight="40"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etRoomId"
-            android:layout_width="324dp"
+        <Button
+            android:id="@+id/btnPlayGame"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="btnCreateGameClick"
+            android:text="PLAY"
             android:layout_gravity="center_horizontal"
-            android:ems="10"
-            android:hint="ROOM ID"
-            android:inputType="number"
-            android:textColor="#F3F3F3"
-            android:textColorHint="#F3F3F3"
-            android:textSize="20sp"
-            android:paddingBottom="20dp" />
+            android:background="@drawable/register_style"
+            android:textColor="@color/colorPrimary"
+            android:textSize="30sp"/>
 
         <Button
-            android:id="@+id/btnJoinGame"
+            android:id="@+id/btnGameRules"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="btnCreateGameClick"
+            android:text="RULES"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/btn_purple_style"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="5dp"
+            android:textSize="30sp"/>
+
+        <Button
+            android:id="@+id/btnGameAuthors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:onClick="btnJoinGameClick"
             android:background="@drawable/join_style"
-            android:text="JOIN"
+            android:text="AUTHORS"
             android:textColor="@color/colorPrimary"
+            android:layout_marginTop="5dp"
             android:textSize="30sp"/>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="15dp">
-
-            <TextView
-                android:id="@+id/tvTeams"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TEAMS NUMBER: "
-                android:textColor="#F3F3F3"
-                android:textColorHint="#F3F3F3"
-                android:textSize="25sp" />
-
-            <TextView
-                android:id="@+id/tvTeamsNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="2"
-                android:textColor="#F3F3F3"
-                android:textColorHint="#F3F3F3"
-                android:textSize="25sp" />
-        </LinearLayout>
-
-        <SeekBar
-            android:id="@+id/sbTeamsNumber"
-            android:layout_width="330dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp"
-            android:max="7"
-            android:progress="1"/>
-
         <Button
-            android:id="@+id/btnCreateGame"
+            android:id="@+id/btnSupportAuthors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="btnCreateGameClick"
-            android:text="CREATE GAME"
+            android:text="SUPPORT AUTHORS"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/register_style"
+            android:background="@drawable/btn_money_style"
             android:textColor="@color/colorPrimary"
             android:layout_marginTop="5dp"
             android:textSize="30sp"/>

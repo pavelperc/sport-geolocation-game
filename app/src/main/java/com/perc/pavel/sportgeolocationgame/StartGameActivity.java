@@ -42,7 +42,10 @@ public class StartGameActivity extends AppCompatActivity {
         sbTeamsNumber = (SeekBar) findViewById(R.id.sbTeamsNumber);
         tvTeams = (TextView) findViewById(R.id.tvTeams);
         tvTeamsNumber = (TextView) findViewById(R.id.tvTeamsNumber);
+
         profileName = (TextView) findViewById(R.id.profileName);
+        profileName.setText(profile.getName());
+
         etRoomId = (EditText) findViewById(R.id.etRoomId);
         btnJoinGame = (Button) findViewById(R.id.btnJoinGame);
         btnCreateGame = (Button) findViewById(R.id.btnCreateGame);
