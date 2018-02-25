@@ -47,11 +47,13 @@ public class MainMenuActivity extends AppCompatActivity {
         btnSupportAuthors = (Button) findViewById(R.id.btnSupportAuthors);
 
         Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+        profileName.setTypeface(Matiz);
         
         Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
         btnPlayGame.setTypeface(PhosphateSolid);
         btnGameRules.setTypeface(PhosphateSolid);
         btnGameAuthors.setTypeface(PhosphateSolid);
+        btnSupportAuthors.setTypeface(PhosphateSolid);
         
     }
 
