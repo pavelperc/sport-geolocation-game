@@ -54,9 +54,9 @@ public class StartGameActivity extends AppCompatActivity {
         etRoomId.setTypeface(Matiz);
         tvTeams.setTypeface(Matiz);
         tvTeamsNumber.setTypeface(Matiz);
+        profileName.setTypeface(Matiz);
 
         Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
-        profileName.setTypeface(PhosphateSolid);
         btnJoinGame.setTypeface(PhosphateSolid);
         btnCreateGame.setTypeface(PhosphateSolid);
         
