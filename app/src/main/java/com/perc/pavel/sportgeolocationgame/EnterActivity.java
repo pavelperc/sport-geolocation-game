@@ -199,7 +199,7 @@ public class EnterActivity extends AppCompatActivity {
                         editor.putString("startGps", etStartGps.getText().toString());
                         editor.apply();
                         
-                        Intent intent = new Intent(EnterActivity.this, StartGameActivity.class);
+                        Intent intent = new Intent(EnterActivity.this, MainMenuActivity.class);
                         Profile profile = new Profile(name, login, password);
                         intent.putExtra("profile",profile);
                         startActivity(intent);

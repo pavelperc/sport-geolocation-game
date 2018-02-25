@@ -17,27 +17,29 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class MainMenuActivity extends AppCompatActivity {
     
-//    TextView profileName;
+    TextView profileName;
     Button btnPlayGame;
     Button btnGameAuthors;
     Button btnGameRules;
     Button btnSupportAuthors;
-
+    Profile profile;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-//        profile = (Profile) getIntent().getSerializableExtra("profile");
-//        
-//
-//        profileName = (TextView) findViewById(R.id.profileName);
-//        profileName.setText(profile.getName());
+        profile = (Profile) getIntent().getSerializableExtra("profile");
+
+
+        profileName = (TextView) findViewById(R.id.profileName);
+        profileName.setText(profile.getName());
 
         btnPlayGame = (Button) findViewById(R.id.btnPlayGame);
         btnGameRules = (Button) findViewById(R.id.btnGameRules);
@@ -47,7 +49,6 @@ public class MainMenuActivity extends AppCompatActivity {
         Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
         
         Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
-//        profileName.setTypeface(PhosphateSolid);
         btnPlayGame.setTypeface(PhosphateSolid);
         btnGameRules.setTypeface(PhosphateSolid);
         btnGameAuthors.setTypeface(PhosphateSolid);
@@ -56,6 +57,9 @@ public class MainMenuActivity extends AppCompatActivity {
 
 
     public void btnPlayGameClick(View v) {
-        startActivity(new Intent(MainMenuActivity.this, EnterActivity.class));
+        Intent intent = new Intent(MainMenuActivity.this, StartGameActivity.class);
+        intent.putExtra("profile", (Serializable)profile);
+        
+        startActivity(intent);
     }
 }
