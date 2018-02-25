@@ -142,6 +142,10 @@ public class StartGameActivity extends AppCompatActivity {
     
     public void btnJoinGameClick(View v) {
         EditText etRoomId = (EditText) findViewById(R.id.etRoomId);
+        if (etRoomId.getText().toString().equals("")) {
+            Toast.makeText(this, "Номер комнаты не введён.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         final int roomId = Integer.parseInt(etRoomId.getText().toString());
         
         // отправка запроса на подключение к комнате

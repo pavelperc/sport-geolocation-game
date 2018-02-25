@@ -25,14 +25,14 @@
                 android:id="@+id/profileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:maxWidth="380dp"
-                android:maxLines="2"
-                android:text="MainMenu"
-                android:layout_gravity="top"
                 android:layout_centerHorizontal="true"
-                android:textAllCaps="true"
+                android:layout_gravity="top"
+                android:layout_marginTop="20dp"
+                android:maxLines="2"
+                android:maxWidth="380dp"
+                android:text="Main Menu"
                 android:textAlignment="center"
+                android:textAllCaps="true"
                 android:textColor="#F3F3F3"
                 android:textSize="30sp"
                 tools:layout_editor_absoluteX="0dp"/>
@@ -60,10 +60,10 @@
             android:id="@+id/btnPlayGame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="btnCreateGameClick"
-            android:text="PLAY"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/register_style"
+            android:onClick="btnPlayGameClick"
+            android:text="PLAY"
             android:textColor="@color/colorPrimary"
             android:textSize="30sp"/>
 
@@ -71,12 +71,11 @@
             android:id="@+id/btnGameRules"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="btnCreateGameClick"
-            android:text="RULES"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/btn_purple_style"
-            android:textColor="@color/colorPrimary"
             android:layout_marginTop="5dp"
+            android:background="@drawable/btn_purple_style"
+            android:text="RULES"
+            android:textColor="@color/colorPrimary"
             android:textSize="30sp"/>
 
         <Button
@@ -84,23 +83,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:onClick="btnJoinGameClick"
+            android:layout_marginTop="5dp"
             android:background="@drawable/join_style"
             android:text="AUTHORS"
             android:textColor="@color/colorPrimary"
-            android:layout_marginTop="5dp"
             android:textSize="30sp"/>
 
         <Button
             android:id="@+id/btnSupportAuthors"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="btnCreateGameClick"
-            android:text="SUPPORT AUTHORS"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/btn_money_style"
-            android:textColor="@color/colorPrimary"
             android:layout_marginTop="5dp"
+            android:background="@drawable/btn_money_style"
+            android:text="SUPPORT AUTHORS"
+            android:textColor="@color/colorPrimary"
             android:textSize="30sp"/>
 
     </LinearLayout>

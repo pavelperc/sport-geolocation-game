@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#f3f3f3</color>
     <color name="colorPrimaryDark">#262D3E</color>
-    <color name="colorAccent">#F3F3F3</color>
+    <color name="colorAccent">#f44336</color>
     <color name="chatBackground">#64ffffff</color>
     <color name="chatMessageSent">#00c853</color>
     <color name="chatMessageReceived">#ff6f02</color>

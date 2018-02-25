@@ -21,15 +21,16 @@
         android:id="@+id/ll_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bottom_sheet_background_color"
         android:clickable="true"
         android:focusableInTouchMode="false"
+        android:minHeight="0dp"
         android:orientation="vertical">
 
         <ImageView
             android:id="@+id/arrow"
             android:layout_width="match_parent"
             android:layout_height="20dp"
+            android:background="@drawable/black_line"
             app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp"/>
 
         <LinearLayout
@@ -37,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:id="@+id/ll_head"
@@ -86,7 +87,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Размер круга:"
-                        />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"/>
 
                     <TextView
                         android:id="@+id/tvCircleSize"
@@ -94,7 +97,9 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:text="100"
-                        android:textAppearance="@style/TextAppearance.AppCompat"/>
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"/>
                 </LinearLayout>
 
                 <SeekBar
@@ -117,7 +122,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="Количество флажков:"
-                        />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"/>
 
                     <TextView
                         android:id="@+id/tvFlagsCount"
@@ -125,13 +132,15 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:text="30"
-                        android:textAppearance="@style/TextAppearance.AppCompat"/>
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"/>
 
                 </LinearLayout>
 
                 <SeekBar
                     android:id="@+id/sbFlagsCount"
-                    style="@android:style/Widget.DeviceDefault.Light.SeekBar"
+                    style="@android:style/Widget.DeviceDefault.SeekBar"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:layout_weight="1"
@@ -154,6 +163,7 @@
                 android:layout_margin="10dp"
                 android:text="Распределение по командам:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="@color/colorAccent"
                 android:textStyle="bold"/>
 
             <android.support.v7.widget.RecyclerView
@@ -176,6 +186,7 @@
                 android:layout_marginLeft="10dp"
                 android:text="Выберите команду:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="@color/colorAccent"
                 android:textStyle="bold"/>
 
             <Spinner
@@ -209,10 +220,10 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:orientation="vertical"
                     android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/btnPickFlag">
+                    android:layout_toStartOf="@+id/btnPickFlag"
+                    android:layout_weight="2"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/textView4"
@@ -221,6 +232,7 @@
                         android:layout_marginLeft="10dp"
                         android:text="Информация о флажке:"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
                         android:textStyle="bold"/>
 
                     <TextView
@@ -230,7 +242,10 @@
                         android:layout_marginBottom="20dp"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
-                        android:text="TextView"/>
+                        android:text="TextView"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:textColor="@color/colorAccent"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </RelativeLayout>
 

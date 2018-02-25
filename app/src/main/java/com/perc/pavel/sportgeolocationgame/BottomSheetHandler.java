@@ -1,5 +1,9 @@
 package com.perc.pavel.sportgeolocationgame;
 
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -50,6 +54,24 @@ public class BottomSheetHandler {
     int energyFlagCost;
     
     
+    // для текстуры
+    public class BitmapDrawableNoMinimumSize extends BitmapDrawable {
+        
+        public BitmapDrawableNoMinimumSize(Resources res, int resId) {
+            super(res, ((BitmapDrawable)res.getDrawable(resId)).getBitmap());
+        }
+        
+        @Override
+        public int getMinimumHeight() {
+            return 0;
+        }
+        @Override
+        public int getMinimumWidth() {
+            return 0;
+        }
+    }
+    
+    
     /**
      * Линия от флажка до нашего игрока
      */
@@ -69,6 +91,13 @@ public class BottomSheetHandler {
         final ImageView arrow = (ImageView) activity.findViewById(R.id.arrow);
         // Экран активити с картой
         final RelativeLayout rlMainScreen = (RelativeLayout) activity.findViewById(R.id.rlMainScreen);
+        
+        // Настройка повторяющейся текстуры фона для bottomSheet
+        BitmapDrawable bmpd =new BitmapDrawableNoMinimumSize(activity.getResources(), R.drawable.metal_texture);
+        bmpd.setTileModeX(Shader.TileMode.REPEAT);
+        bmpd.setTileModeY(Shader.TileMode.REPEAT);
+        activity.findViewById(R.id.ll_background).setBackground(bmpd);
+        
         
         
         // настройка поведения нижнего экрана
@@ -396,8 +425,8 @@ public class BottomSheetHandler {
         double dist = activity.myLastLocation.distanceTo(activity.llToLoc(selectedFlag.getPosition()));
         energyFlagCost = EnergyBlockHandler.getFlagCost(selectedFlag, dist, activity.myPlayer.teamColor);
         
-        tvFlagInfo.setText(String.format("флаг %d\nрасстояние: %.2fм\nактивирован: %s" +
-                "\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)", selectedFlag.number, dist, selectedFlag.activated ? "да" : "нет", energyFlagCost));
+        tvFlagInfo.setText(String.format("флаг %d\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)\nрасстояние: %.2fм\nактивирован: %s"
+                , selectedFlag.number, energyFlagCost, dist, selectedFlag.activated ? "да" : "нет"));
         
         
         // флаг не может быть уже активированным нашей командой

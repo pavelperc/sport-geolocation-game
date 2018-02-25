@@ -23,10 +23,7 @@ import java.util.List;
 
 public class MainMenuActivity extends AppCompatActivity {
     
-    Profile profile;
-    Location location;
-    TextView profileName;
-    EditText etRoomId;
+//    TextView profileName;
     Button btnPlayGame;
     Button btnGameAuthors;
     Button btnGameRules;
@@ -36,23 +33,21 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        profile = (Profile) getIntent().getSerializableExtra("profile");
+//        profile = (Profile) getIntent().getSerializableExtra("profile");
+//        
+//
+//        profileName = (TextView) findViewById(R.id.profileName);
+//        profileName.setText(profile.getName());
 
-
-        profileName = (TextView) findViewById(R.id.profileName);
-        profileName.setText(profile.getName());
-
-        etRoomId = (EditText) findViewById(R.id.etRoomId);
         btnPlayGame = (Button) findViewById(R.id.btnPlayGame);
         btnGameRules = (Button) findViewById(R.id.btnGameRules);
         btnGameAuthors = (Button) findViewById(R.id.btnGameAuthors);
         btnSupportAuthors = (Button) findViewById(R.id.btnSupportAuthors);
 
         Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
-        etRoomId.setTypeface(Matiz);
-
+        
         Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
-        profileName.setTypeface(PhosphateSolid);
+//        profileName.setTypeface(PhosphateSolid);
         btnPlayGame.setTypeface(PhosphateSolid);
         btnGameRules.setTypeface(PhosphateSolid);
         btnGameAuthors.setTypeface(PhosphateSolid);
@@ -60,10 +55,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
 
-    public void btnCreateGameClick(View v) {
-
-    }
-    
-    public void btnJoinGameClick(View v) {
+    public void btnPlayGameClick(View v) {
+        startActivity(new Intent(MainMenuActivity.this, EnterActivity.class));
     }
 }

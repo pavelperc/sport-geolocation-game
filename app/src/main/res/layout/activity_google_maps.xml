@@ -173,7 +173,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_gravity="start"
                     android:layout_weight="0.61"
-                    android:background="@drawable/shape_filled_grey_rectangle"
+                    android:background="@drawable/shape_filled_white_rectangle"
                     android:drawableRight="@drawable/ic_expand_arrow_down_black_24dp"
                     android:minHeight="0dp"
                     android:onClick="btnExpandChatClick"
@@ -215,7 +215,9 @@
                     android:paddingLeft="10dp"
                     android:text="room_id: ???"
                     android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                    android:textColor="@color/colorAccent"
                     android:textSize="32sp"
+                    android:textStyle="bold"
                     android:visibility="gone"/>
 
             </RelativeLayout>
@@ -262,6 +264,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="1"
+                android:background="@drawable/shape_filled_white_rectangle"
                 android:orientation="horizontal">
 
                 <Switch
@@ -313,7 +316,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/ic_zoom_in_black_24dp"
-                    android:backgroundTint="@android:color/holo_purple"
+                    android:backgroundTint="@color/colorAccent"
                     android:onClick="btnZoomInClick"/>
 
                 <Button
@@ -324,7 +327,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/ic_zoom_out_black_24dp"
-                    android:backgroundTint="@android:color/holo_purple"
+                    android:backgroundTint="@color/colorAccent"
                     android:onClick="btnZoomOutClick"/>
             </LinearLayout>
 
@@ -336,7 +339,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:background="@drawable/ic_my_location_black_24dp"
-                android:backgroundTint="@android:color/holo_purple"
+                android:backgroundTint="@color/colorAccent"
                 android:onClick="btnMyLocationClick"/>
         </LinearLayout>
 

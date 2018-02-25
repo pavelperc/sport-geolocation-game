@@ -26,6 +26,15 @@
                 android:layout_marginTop="20dp"
                 android:layout_centerVertical="true"
                 app:srcCompat="@drawable/icon_app"/>
+
+            <ProgressBar
+                android:id="@+id/pbLoading"
+                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:visibility="gone"/>
         </RelativeLayout>
 
     </LinearLayout>
@@ -50,13 +59,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:textSize="20sp"
                 android:hint="USERNAME"
                 android:inputType="text"
                 android:orientation="vertical"
+                android:paddingBottom="20dp"
                 android:textColor="#F3F3F3"
                 android:textColorHint="#F3F3F3"
-                android:paddingBottom="20dp"/>
+                android:textSize="20sp"/>
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -146,13 +155,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <ProgressBar
-                    android:id="@+id/pbLoading"
-                    style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -165,10 +167,10 @@
                         android:id="@+id/chbFakeGps"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#F3F3F3"
-                        android:textColorHint="#F3F3F3"
                         android:text="Fake gps: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="#F3F3F3"
+                        android:textColorHint="#F3F3F3"/>
 
                     <EditText
                         android:id="@+id/etStartGps"
@@ -176,10 +178,10 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="0.0; 0.0"
-                        android:textColor="#F3F3F3"
-                        android:textColorHint="#F3F3F3"
                         android:inputType="none"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="#F3F3F3"
+                        android:textColorHint="#F3F3F3"/>
 
                 </LinearLayout>
 

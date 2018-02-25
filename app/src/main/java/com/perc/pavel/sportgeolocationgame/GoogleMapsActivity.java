@@ -370,7 +370,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         // загрузка стиля карты
         googleMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
-                        this, R.raw.purple_map_style));
+                        this, R.raw.dark_blue_map_style));
             
         googleMap.getUiSettings().setCompassEnabled(false);
         //googleMap.setBuildingsEnabled(false);
@@ -529,8 +529,6 @@ public class GoogleMapsActivity extends AppCompatActivity
         
 //        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 2500, null);
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
-    
-        
         
         
         // открытие выдвигающегося экрана снизу
@@ -547,7 +545,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             circle = googleMap.addCircle(new CircleOptions()
                     .center(new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude()))
                     .radius((bottomSheetHandler.sbCircleSize.getProgress() + 1) * 100)
-                    .strokeColor(getResources().getColor(android.R.color.holo_purple)));
+                    .strokeColor(getResources().getColor(R.color.colorAccent)));
         }
         
         //startPlayersUpdates();
