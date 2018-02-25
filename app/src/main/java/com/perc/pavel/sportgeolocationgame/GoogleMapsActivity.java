@@ -629,7 +629,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         return res;
     }
     
-    void btnMyLocationClick(View v) {
+    public void btnMyLocationClick(View v) {
         if (myLastLocation != null) {
             
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
@@ -664,11 +664,11 @@ public class GoogleMapsActivity extends AppCompatActivity
         }
     }
     
-    void btnZoomInClick(View v) {
+    public void btnZoomInClick(View v) {
         googleMap.animateCamera(CameraUpdateFactory.zoomIn());
     }
     
-    void btnZoomOutClick(View v) {
+    public void btnZoomOutClick(View v) {
         googleMap.animateCamera(CameraUpdateFactory.zoomOut());
     }
     

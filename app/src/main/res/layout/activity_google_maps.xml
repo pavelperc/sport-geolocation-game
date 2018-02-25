@@ -231,7 +231,8 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -290,9 +291,9 @@
             android:id="@+id/mapControls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/llRotate"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginBottom="48dp"
+            android:layout_marginBottom="30dp"
             android:layout_marginRight="16dp"
             android:orientation="vertical"
             app:layout_anchor="@+id/bottom_sheet"
