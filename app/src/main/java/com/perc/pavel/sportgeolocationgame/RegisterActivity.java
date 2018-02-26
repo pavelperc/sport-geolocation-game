@@ -84,9 +84,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, login + password + name, Toast.LENGTH_SHORT).show();
-
-
         JSONObject send = new JSONObject();
         try {
             send.put("type", "register");

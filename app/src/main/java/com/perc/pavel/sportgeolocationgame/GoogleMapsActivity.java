@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Handler;
@@ -167,10 +168,13 @@ public class GoogleMapsActivity extends AppCompatActivity
 //        if (createGame) {
 //            myPlayer.teamColor = teamColors.get(0);
 //        }
-        
+
+        Typeface PhosphateInline = Typeface.createFromAsset(getAssets(), "fonts/PhosphateInline.ttf");
+
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
         if (createGame) {
-            tvRoomId.setText("ROOM_ID: " + roomId);
+            tvRoomId.setTypeface(PhosphateInline);
+            tvRoomId.setText("ROOM ID: " + roomId);
             tvRoomId.setVisibility(View.VISIBLE);
         }
         
@@ -545,7 +549,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             circle = googleMap.addCircle(new CircleOptions()
                     .center(new LatLng(myLastLocation.getLatitude(), myLastLocation.getLongitude()))
                     .radius((bottomSheetHandler.sbCircleSize.getProgress() + 1) * 100)
-                    .strokeColor(getResources().getColor(R.color.colorAccent)));
+                    .strokeColor(getResources().getColor(R.color.colorPrimary)));
         }
         
         //startPlayersUpdates();
