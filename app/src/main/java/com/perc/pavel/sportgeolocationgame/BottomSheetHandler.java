@@ -194,8 +194,6 @@ public class BottomSheetHandler {
                 
                 activity.tvRoomId.setVisibility(View.GONE);
                 hide();
-//                prepareForFlags();
-//                activity.energyBlockHandler = new EnergyBlockHandler(activity);
                 
                 // отправить флажки
                 
@@ -224,6 +222,8 @@ public class BottomSheetHandler {
                     
                     
                     TcpClient.getInstance().sendMessage(jo);
+//                    activity.onTCPMessageReceived(jo);
+                    
                 } catch (JSONException ignored) {
                 }
             }
@@ -330,8 +330,10 @@ public class BottomSheetHandler {
                     jo.put("login", activity.myPlayer.login);
                     jo.put("type", "choose_team");
                     jo.put("team_color", extendedTeamColors.get(position));
-                    TcpClient.getInstance().sendMessage(jo);
                     
+                    TcpClient.getInstance().sendMessage(jo);
+//                    activity.onTCPMessageReceived(jo);
+    
                 } catch (JSONException e) {
                 }
             }
@@ -394,7 +396,9 @@ public class BottomSheetHandler {
                     jo.put("sync_energy", activity.energyBlockHandler.getEnergy());
                     // скорость восстановления энергии без учёта нового флага
                     jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
+                    
                     TcpClient.getInstance().sendMessage(jo);
+//                    activity.onTCPMessageReceived(jo);
                 } catch (JSONException e) {
                 }
                 

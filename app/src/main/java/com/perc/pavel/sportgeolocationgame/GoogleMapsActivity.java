@@ -14,6 +14,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.ColorInt;
@@ -22,6 +23,7 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.util.TimeUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.SortedList;
@@ -71,12 +73,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.TimerTask;
+import java.util.TreeMap;
 
 import okhttp3.HttpUrl;
 
@@ -137,6 +146,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     private RelativeLayout rlChat;
     private TextView tvMissedMsg;
     TextView tvRoomId;
+    TextView tvTimer;
     private int missedMsgCount = 0;
     
     
@@ -172,11 +182,11 @@ public class GoogleMapsActivity extends AppCompatActivity
         Typeface PhosphateInline = Typeface.createFromAsset(getAssets(), "fonts/PhosphateInline.ttf");
 
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
-        if (createGame) {
-            tvRoomId.setTypeface(PhosphateInline);
-            tvRoomId.setText("ROOM ID: " + roomId);
-            tvRoomId.setVisibility(View.VISIBLE);
-        }
+        tvTimer = (TextView) findViewById(R.id.tvTimer);
+        
+        tvRoomId.setTypeface(PhosphateInline);
+        tvRoomId.setText("ROOM ID: " + roomId);
+        tvRoomId.setVisibility(View.VISIBLE);
         
         
         // Создание справа списка с моими сокомандниками
@@ -815,8 +825,26 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     energyBlockHandler = new EnergyBlockHandler(this);
                     
-                    
                     Toast.makeText(this, "GAME STARTED!!!", Toast.LENGTH_SHORT).show();
+    
+    
+                    tvRoomId.setVisibility(View.GONE);
+                    tvTimer.setVisibility(View.VISIBLE);
+                    
+                    
+                    // начало таймера обратного отсчёта до конца игры
+                    
+                    new CountDownTimer(1000 * 60 * 30, 1) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            tvTimer.setText(new SimpleDateFormat("mm:ss").format(new Date(millisUntilFinished)));
+                        }
+        
+                        @Override
+                        public void onFinish() {
+                            finishGame();
+                        }
+                    }.start();
                     
                     break;
                 case "cords":
@@ -866,6 +894,17 @@ public class GoogleMapsActivity extends AppCompatActivity
                     Flag flag = flags.get(jo.getInt("number"));
                     
                     pickFlag(flag, jo.optInt("cost", 0), jo.optInt("color_to_change", flag.teamColor));
+                    
+                    // проверка что все флажки одного цвета
+                    boolean endGame = true;
+                    for (Flag flag1 : flags.values()) {
+                        if (flag1.teamColor != flag.teamColor) {
+                            endGame = false;
+                            break;
+                        }
+                    }
+                    if (endGame)
+                        finishGame();
                     break;
                 default:
                     Toast.makeText(GoogleMapsActivity.this, "Unknown TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
@@ -875,6 +914,56 @@ public class GoogleMapsActivity extends AppCompatActivity
         } catch (JSONException e) {
             Toast.makeText(this, "JSONException:\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    
+    private void finishGame() {
+        // цвет->количество флажков
+        Map<Integer, Integer> map = new HashMap<>();
+        
+        for (Integer teamColor : teamColors) {
+            map.put(teamColor, 0);
+        }
+        
+        for (Flag flag : flags.values()) {
+            if (flag.activated) {
+                map.put(flag.teamColor, map.get(flag.teamColor) + 1);
+            }
+        }
+        
+        LinearLayout ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ll.setLayoutParams(lp);
+        
+        TextView title = new TextView(this);
+//        title.setLayoutParams(lp);
+        title.setText("Распределение флажков по командам:");
+        ll.addView(title);
+        
+        for (Map.Entry<Integer,Integer> pair : map.entrySet()) {
+            TextView tv = new TextView(this);
+            tv.setText(pair.getValue().toString());
+            tv.setBackgroundColor(pair.getKey());
+            tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+//            tv.setLayoutParams(lp);
+            ll.addView(tv);
+        }
+        
+        
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
+        builder.setTitle("Конец игры!")
+                .setView(ll)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                        GoogleMapsActivity.this.finish();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
     
     /** Добавляем в players и обновляем все списки. Маркеры не обновляются!
