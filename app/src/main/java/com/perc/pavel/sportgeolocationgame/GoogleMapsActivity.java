@@ -642,29 +642,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     .zoom(18)
                     .bearing(myLastLocation.getBearing())// Направление
                     .build()));
-
-
-//            // Вычисление местоположения камеры, чтобы маркер стал внизу карты
-//            View view = mapFragment.getView();
-//            
-//            Projection projection = googleMap.getProjection();
-//            LatLng markerPosition = locToLL(myLastLocation);
-//            Point markerPoint = projection.toScreenLocation(markerPosition);
-//            Point targetPoint = new Point(markerPoint.x, markerPoint.y - view.getHeight() / 4);
-//            // Нужная позиция
-//            LatLng targetPosition = projection.fromScreenLocation(targetPoint);
-//            
-//            
-//            
-//            // Анимация камеры
-//            CameraPosition position = new CameraPosition.Builder()
-//                    .tilt(googleMap.getCameraPosition().tilt)// Наклон
-//                    .target(targetPosition)
-//                    .zoom(18) // непонятно как будет работать со сдвигом
-//                    .bearing(myLastLocation.getBearing())// Направление
-//                    .build();
-//
-//            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500, null);
+            
         }
     }
     

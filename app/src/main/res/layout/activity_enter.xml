@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:weightSum="100"
-    tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity"
-    android:background="@color/colorPrimaryDark">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="fill_parent"
+              android:background="@color/colorPrimaryDark"
+              android:elevation="1dp"
+              android:orientation="vertical"
+              android:weightSum="100"
+              tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,12 +20,13 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <ImageView
                 android:id="@+id/imageViewIcon"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 android:layout_centerVertical="true"
+                android:layout_marginTop="20dp"
                 app:srcCompat="@drawable/icon_app"/>
 
             <ProgressBar
@@ -46,13 +48,13 @@
         android:orientation="vertical">
 
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/animLogin"
             android:layout_width="324dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:hint=""
             android:textColor="#F3F3F3"
-            android:textColorHint="#F3F3F3"
-            android:id="@+id/animLogin">
+            android:textColorHint="#F3F3F3">
 
             <EditText
                 android:id="@+id/etLogin"
@@ -69,30 +71,30 @@
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/animPassword"
             android:layout_width="324dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            app:passwordToggleEnabled="true"
             android:textColor="#F3F3F3"
             android:textColorHint="#F3F3F3"
-            app:passwordToggleTint="@color/colorAccent"
-            android:id="@+id/animPassword">
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/colorAccent">
 
             <android.support.design.widget.TextInputEditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
-                android:layout_toStartOf="@+id/btnEye"
-                android:hint="PASSWORD"
-                android:inputType="textPassword"
                 android:layout_gravity="center_horizontal"
+                android:layout_toStartOf="@+id/btnEye"
+                android:ems="10"
+                android:hint="PASSWORD"
+                android:imeOptions="actionGo"
+                android:inputType="textPassword"
                 android:orientation="vertical"
-                android:textSize="20sp"
                 android:paddingBottom="20dp"
                 android:textColor="#F3F3F3"
                 android:textColorHint="#F3F3F3"
-                android:imeOptions="actionGo"/>
+                android:textSize="20sp"/>
         </android.support.design.widget.TextInputLayout>
 
         <RelativeLayout
@@ -100,9 +102,9 @@
             android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/loginLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/loginLayout"
                 android:layout_centerHorizontal="true">
 
                 <Button
@@ -122,7 +124,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:background="@drawable/vk_reg_style"
-                    android:onClick="btnVkRegisterClick" />
+                    android:onClick="btnVkRegisterClick"/>
 
             </LinearLayout>
 
@@ -136,20 +138,20 @@
                 android:background="@color/colorPrimaryDark"
                 android:text="FORGOT PASSWORD"
                 android:textColor="@color/colorPrimary"
-                android:textSize="20sp" />
+                android:textSize="20sp"/>
 
             <Button
                 android:id="@+id/btnRegister"
-                android:layout_below="@+id/btnForgot"
                 android:layout_width="wrap_content"
                 android:layout_height="18dp"
+                android:layout_below="@+id/btnForgot"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="20dp"
                 android:background="@color/colorPrimaryDark"
-                android:layout_centerHorizontal="true"
                 android:onClick="btnRegisterClick"
                 android:text="CREATE NEW ACCOUNT"
                 android:textColor="@color/colorPrimary"
-                android:textSize="20sp" />
+                android:textSize="20sp"/>
 
             <RelativeLayout
                 android:layout_width="match_parent"

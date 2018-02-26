@@ -64,4 +64,9 @@ public class MainMenuActivity extends AppCompatActivity {
         
         startActivity(intent);
     }
+    
+    public void btnGameRulesClick(View v) {
+        Intent intent = new Intent(MainMenuActivity.this, RulesActivity.class);
+        startActivity(intent);
+    }
 }
