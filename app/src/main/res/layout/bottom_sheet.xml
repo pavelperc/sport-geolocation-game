@@ -24,6 +24,7 @@
         android:clickable="true"
         android:focusableInTouchMode="false"
         android:minHeight="0dp"
+        android:background="@color/colorPrimaryDark"
         android:orientation="vertical">
 
         <ImageView
@@ -31,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="20dp"
             android:background="@drawable/black_line"
-            app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp"/>
+            app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp" />
 
         <LinearLayout
             android:id="@+id/ll_create_game"
@@ -55,7 +56,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="Сгенерировать флажки"/>
+                    android:text="Сгенерировать флажки" />
 
                 <Button
                     android:id="@+id/btnStartGame"
@@ -66,7 +67,7 @@
                     android:enabled="false"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="Начать игру"/>
+                    android:text="Начать игру" />
 
             </LinearLayout>
 
@@ -88,8 +89,8 @@
                         android:layout_margin="10dp"
                         android:text="Размер круга:"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvCircleSize"
@@ -98,18 +99,17 @@
                         android:layout_gravity="center_vertical"
                         android:text="100"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <SeekBar
                     android:id="@+id/sbCircleSize"
-                    style="@style/Widget.AppCompat.SeekBar.Discrete"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:layout_weight="1"
                     android:max="9"
-                    android:progress="0"/>
+                    android:progress="0" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -123,8 +123,8 @@
                         android:layout_margin="10dp"
                         android:text="Количество флажков:"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvFlagsCount"
@@ -133,8 +133,8 @@
                         android:layout_gravity="center_vertical"
                         android:text="30"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -145,7 +145,7 @@
                     android:layout_height="40dp"
                     android:layout_weight="1"
                     android:max="300"
-                    android:progress="30"/>
+                    android:progress="30" />
 
             </LinearLayout>
         </LinearLayout>
@@ -163,14 +163,13 @@
                 android:layout_margin="10dp"
                 android:text="Распределение по командам:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/colorAccent"
-                android:textStyle="bold"/>
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold" />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_team_sharing"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                />
+                android:layout_height="120dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -186,16 +185,15 @@
                 android:layout_marginLeft="10dp"
                 android:text="Выберите команду:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/colorAccent"
-                android:textStyle="bold"/>
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spChooseTeam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="30dp"
-                android:layout_marginLeft="10dp"
-                />
+                android:layout_marginLeft="10dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -215,7 +213,7 @@
                     android:layout_alignParentEnd="true"
                     android:maxLines="1"
                     android:singleLine="true"
-                    android:text="Собрать флаг"/>
+                    android:text="Собрать флаг" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -233,7 +231,7 @@
                         android:text="Информация о флажке:"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvFlagInfo"
@@ -245,7 +243,7 @@
                         android:text="TextView"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         android:textColor="@color/colorAccent"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
             </RelativeLayout>
 

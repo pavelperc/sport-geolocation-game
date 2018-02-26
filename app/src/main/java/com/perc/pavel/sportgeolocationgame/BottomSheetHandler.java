@@ -92,11 +92,11 @@ public class BottomSheetHandler {
         // Экран активити с картой
         final RelativeLayout rlMainScreen = (RelativeLayout) activity.findViewById(R.id.rlMainScreen);
         
-        // Настройка повторяющейся текстуры фона для bottomSheet
-        BitmapDrawable bmpd =new BitmapDrawableNoMinimumSize(activity.getResources(), R.drawable.metal_texture);
-        bmpd.setTileModeX(Shader.TileMode.REPEAT);
-        bmpd.setTileModeY(Shader.TileMode.REPEAT);
-        activity.findViewById(R.id.ll_background).setBackground(bmpd);
+//        // Настройка повторяющейся текстуры фона для bottomSheet
+//        BitmapDrawable bmpd =new BitmapDrawableNoMinimumSize(activity.getResources(), R.drawable.metal_texture);
+//        bmpd.setTileModeX(Shader.TileMode.REPEAT);
+//        bmpd.setTileModeY(Shader.TileMode.REPEAT);
+//        activity.findViewById(R.id.ll_background).setBackground(bmpd);
         
         
         
