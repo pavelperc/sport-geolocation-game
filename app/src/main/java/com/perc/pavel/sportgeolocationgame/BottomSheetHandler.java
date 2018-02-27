@@ -381,8 +381,6 @@ public class BottomSheetHandler {
                 if (selectedFlag == null) {
                     return;
                 }
-
-//                activity.pickFlag(selectedFlag, energyFlagCost);
                 
                 try {
                     JSONObject jo = new JSONObject();
@@ -423,13 +421,13 @@ public class BottomSheetHandler {
     
     /** Обновление стоимости флага, текста с информацией о флаге, состояния кнопки активация флага*/
     void updateSelectedFlagBar() {
-        if (selectedFlag == null || bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN)
+        if (selectedFlag == null)
             return;
         
         double dist = activity.myLastLocation.distanceTo(activity.llToLoc(selectedFlag.getPosition()));
         energyFlagCost = EnergyBlockHandler.getFlagCost(selectedFlag, dist, activity.myPlayer.teamColor);
         
-        tvFlagInfo.setText(String.format("флаг %d\nстоимость в энергии: %d\n(стоимость пропорциональна расстоянию)\nрасстояние: %.2fм\nактивирован: %s"
+        tvFlagInfo.setText(String.format("Информация о флаге %d:\nСтоимость в энергии: %d\n(стоимость пропорциональна расстоянию)\nрасстояние: %.2fм\nактивирован: %s"
                 , selectedFlag.number, energyFlagCost, dist, selectedFlag.activated ? "да" : "нет"));
         
         
@@ -481,7 +479,7 @@ public class BottomSheetHandler {
     void hideFlagBar() {
         if (!isPreparedForFlags())
             return;
-        
+        selectedFlag = null;
         hide();
     }
 }

@@ -183,6 +183,7 @@ public class GoogleMapsActivity extends AppCompatActivity
 
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
         tvTimer = (TextView) findViewById(R.id.tvTimer);
+        tvTimer.setVisibility(View.GONE);
         
         tvRoomId.setTypeface(PhosphateInline);
         tvRoomId.setText("ROOM ID: " + roomId);
@@ -272,6 +273,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             TcpClient.getInstance().httpGetRequest(url, new HttpListener() {
                 @Override
                 public void onResponse(JSONObject message) {
+                    Log.d("my_tag", "Returned get_players_in_room: " + message.toString());
                     try {
                         if (!message.getBoolean("status")) {
                             Toast.makeText(GoogleMapsActivity.this, "server error in get_players_in_room:\n" 
@@ -781,7 +783,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     break;
                 case "new_player_in_room":
                     Player p = new Player(jo);
-    
+                    
                     // не допускаем замены текущего игрока, так как потом невозможно будет найти объект myPLayer
                     if (p.login.equals(myPlayer.login))
                         return;
@@ -895,10 +897,10 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     pickFlag(flag, jo.optInt("cost", 0), jo.optInt("color_to_change", flag.teamColor));
                     
-                    // проверка что все флажки одного цвета
+                    // проверка что все флажки одного цвета и активированы и окончание игры
                     boolean endGame = true;
                     for (Flag flag1 : flags.values()) {
-                        if (flag1.teamColor != flag.teamColor) {
+                        if (!flag1.activated || flag1.teamColor != flag.teamColor) {
                             endGame = false;
                             break;
                         }

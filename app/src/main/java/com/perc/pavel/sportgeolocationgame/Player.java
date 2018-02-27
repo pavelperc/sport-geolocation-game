@@ -81,10 +81,10 @@ class Player {
     Player(JSONObject player) throws JSONException {
         login = player.getString("login");
         name = player.optString("name", login);
+        teamColor = player.optInt("team_color", NO_TEAM_COLOR);
         
         lat = player.optDouble("lat", UNSET_COORD);
         lng = player.optDouble("lng", UNSET_COORD);
-        teamColor = player.optInt("team_color", NO_TEAM_COLOR);
     }
     
 //    public JSONObject getJson() {

@@ -216,9 +216,10 @@
                         android:layout_alignParentStart="true"
                         android:layout_below="@+id/tvMissedMsg"
                         android:background="@drawable/filled_rectangle_purple"
+                        android:paddingBottom="2dp"
                         android:paddingLeft="10dp"
                         android:paddingRight="10dp"
-                        android:paddingTop="5dp"
+                        android:paddingTop="2dp"
                         android:text="ROOM ID: ???"
                         android:textAllCaps="true"
                         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
@@ -234,16 +235,17 @@
                         android:layout_alignParentStart="true"
                         android:layout_below="@+id/tvRoomId"
                         android:background="@drawable/filled_rectangle_purple"
+                        android:paddingBottom="2dp"
                         android:paddingLeft="10dp"
                         android:paddingRight="10dp"
-                        android:paddingTop="5dp"
+                        android:paddingTop="2dp"
                         android:text="99:99"
                         android:textAllCaps="true"
                         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                         android:textColor="#FFFFFF"
-                        android:textSize="32sp"
+                        android:textSize="24sp"
                         android:textStyle="bold"
-                        android:visibility="gone"/>
+                        android:visibility="visible"/>
 
                 </LinearLayout>
 

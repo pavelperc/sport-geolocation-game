@@ -211,6 +211,7 @@ class TcpClient {
                         
                         
                         final String serverMessage = mBufferIn.readLine();
+//                        Log.d("my_tag", "reseived from server raw: \"" + (serverMessage == null ? "" : serverMessage) + "\"");
                         if (serverMessage == null || serverMessage.equals("") || serverMessage.equals("\n"))
                             continue;
                         

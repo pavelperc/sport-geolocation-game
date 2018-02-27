@@ -4,7 +4,7 @@
 
     <!-- View background color -->
     <solid
-        android:color="#7383BF" >
+        android:color="#647383bf" >
     </solid>
     
     <corners
