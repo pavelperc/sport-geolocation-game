@@ -346,13 +346,16 @@ class TcpClient {
                     @Override
                     public void run() {
                         try {
-                            JSONObject jo = new JSONObject(response.body().string());
-                            
+                            String str = response.body().string();
+                            Log.d("my_tag", "Http received: " + str);
+                            JSONObject jo = new JSONObject(str);
                             httpListener.onResponse(jo);
                         } catch (IOException e) {
                             httpListener.onFailure("Unexpected code: " + response);
                         } catch (JSONException e) {
                             httpListener.onFailure("JSONException: " + e.getMessage());
+                        } catch (Exception e) {
+                            httpListener.onFailure("Another http exception: " + e.getMessage());
                         }
                     }
                 });

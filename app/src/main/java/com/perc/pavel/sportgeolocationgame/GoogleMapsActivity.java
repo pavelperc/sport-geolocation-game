@@ -92,7 +92,7 @@ import okhttp3.HttpUrl;
 public class GoogleMapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, TcpMessageListener {
     
-    private int roomId;
+    int roomId;
     boolean createGame;
     
     private Random rnd = new Random();
@@ -104,7 +104,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     Map<String, Player> playersMap = new HashMap<>();
     SortedList<Player> players;
     
-    /** Служит для хранения команды, логина и имени, Location никогда не заполняется
+    /** Служит для хранения команды, логина и имени, Location никогда не заполняется!!!!
      * TeamColor по умолчанию серый (Player.NO_TEAM_COLOR)*/
     Player myPlayer;
     
@@ -1075,9 +1075,9 @@ public class GoogleMapsActivity extends AppCompatActivity
                 final Handler handler = new Handler();
                 final long start = SystemClock.uptimeMillis();
                 final long duration = 1000;
-
+                
                 final Interpolator interpolator = new BounceInterpolator();
-
+                
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

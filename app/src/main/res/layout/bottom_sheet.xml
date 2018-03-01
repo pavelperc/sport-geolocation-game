@@ -151,6 +151,46 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ll_add_bots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Добавить бота с цветом:"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"/>
+
+                <Spinner
+                    android:id="@+id/spBotTeam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:minWidth="50dp"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnAddBot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Добавить бота"/>
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/ll_team_sharing"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -174,9 +214,9 @@
 
         <LinearLayout
             android:id="@+id/ll_choose_team"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/textView3"
@@ -186,14 +226,14 @@
                 android:text="Выберите команду:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 android:textColor="@color/colorPrimary"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
             <Spinner
                 android:id="@+id/spChooseTeam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="30dp"
-                android:layout_marginLeft="10dp" />
+                android:layout_marginLeft="10dp"/>
         </LinearLayout>
 
         <LinearLayout

@@ -22,12 +22,11 @@ public class EnergyBlockHandler {
         return cost;
     }
     
-    
-    GoogleMapsActivity activity;
-    
     private int energy = 0;
     // начальная скорость равна 5
     private int speed = 5;
+    
+    GoogleMapsActivity activity;
     
     TextView tvEnergyValue;
     TextView tvEnergySpeed;
