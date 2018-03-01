@@ -1,196 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="fill_parent"
-              android:background="@color/colorPrimaryDark"
-              android:elevation="1dp"
-              android:orientation="vertical"
-              android:weightSum="100"
-              tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity">
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="60"
         android:orientation="vertical"
-        android:weightSum="100">
+        android:weightSum="100"
+        android:elevation="1dp">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_weight="60"
+            android:orientation="vertical"
+            android:weightSum="100">
 
-            <ImageView
-                android:id="@+id/imageViewIcon"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="20dp"
-                app:srcCompat="@drawable/icon_app"/>
+                android:layout_height="match_parent">
 
-            <ProgressBar
-                android:id="@+id/pbLoading"
-                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:visibility="gone"/>
-        </RelativeLayout>
+                <ImageView
+                    android:id="@+id/imageViewIcon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="20dp"
+                    app:srcCompat="@drawable/icon_app"/>
 
-    </LinearLayout>
+            </RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="40"
-        android:orientation="vertical">
+        </LinearLayout>
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/animLogin"
-            android:layout_width="324dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:hint=""
-            android:textColor="#F3F3F3"
-            android:textColorHint="#F3F3F3">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="40"
+            android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/etLogin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="USERNAME"
-                android:inputType="text"
-                android:orientation="vertical"
-                android:paddingBottom="20dp"
-                android:textColor="#F3F3F3"
-                android:textColorHint="#F3F3F3"
-                android:textSize="20sp"/>
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/animPassword"
-            android:layout_width="324dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:textColor="#F3F3F3"
-            android:textColorHint="#F3F3F3"
-            app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/colorAccent">
-
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/animLogin"
+                android:layout_width="324dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_toStartOf="@+id/btnEye"
-                android:ems="10"
-                android:hint="PASSWORD"
-                android:imeOptions="actionGo"
-                android:inputType="textPassword"
-                android:orientation="vertical"
-                android:paddingBottom="20dp"
+                android:hint=""
+                android:textColor="#F3F3F3"
+                android:textColorHint="#F3F3F3">
+
+                <EditText
+                    android:id="@+id/etLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="USERNAME"
+                    android:inputType="text"
+                    android:orientation="vertical"
+                    android:paddingBottom="20dp"
+                    android:textColor="#F3F3F3"
+                    android:textColorHint="#F3F3F3"
+                    android:textSize="20sp"/>
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/animPassword"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:textColor="#F3F3F3"
                 android:textColorHint="#F3F3F3"
-                android:textSize="20sp"/>
-        </android.support.design.widget.TextInputLayout>
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/colorAccent">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:id="@+id/loginLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true">
-
-                <Button
-                    android:id="@+id/btnEnter"
-                    android:layout_width="wrap_content"
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:background="@drawable/log_in_style"
-                    android:onClick="btnEnterClick"
-                    android:text="LOG IN"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="30sp"/>
-
-                <Button
-                    android:id="@+id/btnVkRegister"
-                    android:layout_width="64dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/vk_reg_style"
-                    android:onClick="btnVkRegisterClick"/>
-
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btnForgot"
-                android:layout_width="wrap_content"
-                android:layout_height="18dp"
-                android:layout_below="@+id/loginLayout"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"
-                android:background="@color/colorPrimaryDark"
-                android:text="FORGOT PASSWORD"
-                android:textColor="@color/colorPrimary"
-                android:textSize="20sp"/>
-
-            <Button
-                android:id="@+id/btnRegister"
-                android:layout_width="wrap_content"
-                android:layout_height="18dp"
-                android:layout_below="@+id/btnForgot"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"
-                android:background="@color/colorPrimaryDark"
-                android:onClick="btnRegisterClick"
-                android:text="CREATE NEW ACCOUNT"
-                android:textColor="@color/colorPrimary"
-                android:textSize="20sp"/>
+                    android:layout_toStartOf="@+id/btnEye"
+                    android:ems="10"
+                    android:hint="PASSWORD"
+                    android:imeOptions="actionGo"
+                    android:inputType="textPassword"
+                    android:orientation="vertical"
+                    android:paddingBottom="20dp"
+                    android:textColor="#F3F3F3"
+                    android:textColorHint="#F3F3F3"
+                    android:textSize="20sp"/>
+            </android.support.design.widget.TextInputLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <LinearLayout
+                    android:id="@+id/loginLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:orientation="horizontal">
+                    android:layout_centerHorizontal="true">
 
-                    <CheckBox
-                        android:id="@+id/chbFakeGps"
+                    <Button
+                        android:id="@+id/btnEnter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Fake gps: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-                        android:textColor="#F3F3F3"
-                        android:textColorHint="#F3F3F3"/>
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/log_in_style"
+                        android:onClick="btnEnterClick"
+                        android:text="LOG IN"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="30sp"/>
 
-                    <EditText
-                        android:id="@+id/etStartGps"
-                        android:layout_width="match_parent"
+                    <Button
+                        android:id="@+id/btnVkRegister"
+                        android:layout_width="64dp"
                         android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="0.0; 0.0"
-                        android:inputType="none"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-                        android:textColor="#F3F3F3"
-                        android:textColorHint="#F3F3F3"/>
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/vk_reg_style"
+                        android:onClick="btnVkRegisterClick"/>
 
                 </LinearLayout>
 
+                <Button
+                    android:id="@+id/btnForgot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_below="@+id/loginLayout"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp"
+                    android:background="@color/colorPrimaryDark"
+                    android:text="FORGOT PASSWORD"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="20sp"/>
+
+                <Button
+                    android:id="@+id/btnRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_below="@+id/btnForgot"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp"
+                    android:background="@color/colorPrimaryDark"
+                    android:onClick="btnRegisterClick"
+                    android:text="CREATE NEW ACCOUNT"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="20sp"/>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentStart="true"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/chbFakeGps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fake gps: "
+                            android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                            android:textColor="#F3F3F3"
+                            android:textColorHint="#F3F3F3"/>
+
+                        <EditText
+                            android:id="@+id/etStartGps"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:hint="0.0; 0.0"
+                            android:inputType="none"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                            android:textColor="#F3F3F3"
+                            android:textColorHint="#F3F3F3"/>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
             </RelativeLayout>
 
-        </RelativeLayout>
-
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
+</FrameLayout>

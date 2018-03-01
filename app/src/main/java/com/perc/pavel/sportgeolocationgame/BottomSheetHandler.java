@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -50,6 +51,7 @@ public class BottomSheetHandler {
     SeekBar sbCircleSize;
     SeekBar sbFlagsCount;
     
+    ProgressBar pbLoadingBottomSheet;
     
     TextView tvFlagInfo;
     Button btnPickFlag;
@@ -76,13 +78,6 @@ public class BottomSheetHandler {
         }
     }
     
-    
-    /**
-     * Линия от флажка до нашего игрока
-     */
-//    Polyline line;
-
-//    private RelativeLayout rlMainScreen;
     
     /**
      * Если стоит true - то при случайном закрытии botton sheet снова открывается в состояние collapsed.
@@ -155,6 +150,8 @@ public class BottomSheetHandler {
         });
         
         
+        pbLoadingBottomSheet = (ProgressBar) activity.findViewById(R.id.pbLoadingBottomSheet); 
+        
         // Пока скрываем bottom sheet при вызове конструктора
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         
@@ -225,7 +222,7 @@ public class BottomSheetHandler {
 //                        Log.d("my_tag", veryLongString.substring(start, end));
 //                    }
                     
-                    
+                    activity.pbLoading.setVisibility(View.VISIBLE);
                     TcpClient.getInstance().sendMessage(jo);
 //                    activity.onTCPMessageReceived(jo);
                     
@@ -422,9 +419,12 @@ public class BottomSheetHandler {
                     jo.put("type", "choose_team");
                     jo.put("team_color", extendedTeamColors.get(position));
                     
+                    
+                    
+                    
+                    pbLoadingBottomSheet.setVisibility(View.VISIBLE);
                     TcpClient.getInstance().sendMessage(jo);
 //                    activity.onTCPMessageReceived(jo);
-    
                 } catch (JSONException e) {
                 }
             }
@@ -486,6 +486,8 @@ public class BottomSheetHandler {
                     // скорость восстановления энергии без учёта нового флага
                     jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
                     
+                    
+                    activity.pbLoading.setVisibility(View.VISIBLE);
                     TcpClient.getInstance().sendMessage(jo);
 //                    activity.onTCPMessageReceived(jo);
                 } catch (JSONException e) {

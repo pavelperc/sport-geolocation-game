@@ -17,267 +17,281 @@
         android:background="@drawable/shape_gradient_top_shadow"
         app:layout_anchor="@id/bottom_sheet"/>
 
-    <LinearLayout
-        android:id="@+id/ll_background"
+    <FrameLayout
+        android:id="@+id/loading_and_background"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusableInTouchMode="false"
-        android:minHeight="0dp"
-        android:background="@color/colorPrimaryDark"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/arrow"
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:background="@drawable/black_line"
-            app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp" />
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/ll_create_game"
+            android:id="@+id/ll_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="visible">
+            android:background="@color/colorPrimaryDark"
+            android:clickable="true"
+            android:focusableInTouchMode="false"
+            android:minHeight="0dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/arrow"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:background="@drawable/black_line"
+                app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp"/>
 
             <LinearLayout
-                android:id="@+id/ll_head"
+                android:id="@+id/ll_create_game"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_gravity="right"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
 
-                <Button
-                    android:id="@+id/btnGenerateFlags"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:text="Сгенерировать флажки" />
+                <LinearLayout
+                    android:id="@+id/ll_head"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_gravity="right"
+                    android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnStartGame"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:enabled="false"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:text="Начать игру" />
+                    <Button
+                        android:id="@+id/btnGenerateFlags"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="Сгенерировать флажки"/>
 
+                    <Button
+                        android:id="@+id/btnStartGame"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:enabled="false"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="Начать игру"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_setup_flags"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:text="Размер круга:"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@color/colorPrimary"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/tvCircleSize"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="100"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@color/colorPrimary"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <SeekBar
+                        android:id="@+id/sbCircleSize"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:max="9"
+                        android:progress="0"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:text="Количество флажков:"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@color/colorPrimary"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/tvFlagsCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="30"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@color/colorPrimary"
+                            android:textStyle="bold"/>
+
+                    </LinearLayout>
+
+                    <SeekBar
+                        android:id="@+id/sbFlagsCount"
+                        style="@android:style/Widget.DeviceDefault.SeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:max="300"
+                        android:progress="30"/>
+
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ll_setup_flags"
+                android:id="@+id/ll_add_bots"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/textView"
+                        android:id="@+id/textView3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="Размер круга:"
+                        android:layout_marginLeft="10dp"
+                        android:layout_weight="1"
+                        android:text="Добавить бота с цветом:"
                         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                         android:textColor="@color/colorPrimary"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
 
-                    <TextView
-                        android:id="@+id/tvCircleSize"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="100"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorPrimary"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <SeekBar
-                    android:id="@+id/sbCircleSize"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_weight="1"
-                    android:max="9"
-                    android:progress="0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textView1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="Количество флажков:"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorPrimary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvFlagsCount"
+                    <Spinner
+                        android:id="@+id/spBotTeam"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="30"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@color/colorPrimary"
-                        android:textStyle="bold" />
-
+                        android:layout_marginLeft="10dp"
+                        android:layout_weight="1"
+                        android:minWidth="50dp"/>
                 </LinearLayout>
 
-                <SeekBar
-                    android:id="@+id/sbFlagsCount"
-                    style="@android:style/Widget.DeviceDefault.SeekBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                <Button
+                    android:id="@+id/btnAddBot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:max="300"
-                    android:progress="30" />
-
+                    android:text="Добавить бота"/>
             </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_add_bots"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/ll_team_sharing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:text="Распределение по командам:"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"/>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_team_sharing"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_choose_team"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/textView33"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:layout_weight="1"
-                    android:text="Добавить бота с цветом:"
+                    android:text="Выберите команду:"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"/>
 
                 <Spinner
-                    android:id="@+id/spBotTeam"
+                    android:id="@+id/spChooseTeam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="10dp"
-                    android:layout_weight="1"
-                    android:minWidth="50dp"/>
+                    android:layout_marginBottom="30dp"
+                    android:layout_marginLeft="10dp"/>
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btnAddBot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Добавить бота"/>
+            <LinearLayout
+                android:id="@+id/ll_flag_info"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <Button
+                        android:id="@+id/btnPickFlag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="Собрать флаг"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_toStartOf="@+id/btnPickFlag"
+                        android:layout_weight="2"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvFlagInfo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginRight="10dp"
+                            android:text="TextView"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                </RelativeLayout>
+
+            </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/ll_team_sharing"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="Распределение по командам:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/colorPrimary"
-                android:textStyle="bold" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_team_sharing"
-                android:layout_width="match_parent"
-                android:layout_height="120dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_choose_team"
+        <ProgressBar
+            android:id="@+id/pbLoadingBottomSheet"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="Выберите команду:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="@color/colorPrimary"
-                android:textStyle="bold"/>
-
-            <Spinner
-                android:id="@+id/spChooseTeam"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="30dp"
-                android:layout_marginLeft="10dp"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_flag_info"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <Button
-                    android:id="@+id/btnPickFlag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:text="Собрать флаг" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/btnPickFlag"
-                    android:layout_weight="2"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvFlagInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="20dp"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:text="TextView"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:textColor="@android:color/white"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </RelativeLayout>
-
-        </LinearLayout>
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
 
 </LinearLayout>

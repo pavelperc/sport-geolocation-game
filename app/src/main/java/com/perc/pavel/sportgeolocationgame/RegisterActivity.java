@@ -28,7 +28,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etLogin;
     private EditText etPassword;
     private EditText etName;
-    //private ProgressBar pbLoading;
+    private ProgressBar pbLoading;
     private Button btnRegister;
     
 
@@ -40,8 +40,8 @@ public class RegisterActivity extends AppCompatActivity {
         etLogin = (EditText) findViewById(R.id.etLogin);
         etPassword = (EditText) findViewById(R.id.etPassword);
         etName = (EditText) findViewById(R.id.etName);
-        //pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
-
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+        
         btnRegister = (Button) findViewById(R.id.btnRegister);
 
         Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
@@ -83,17 +83,7 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Все поля должны быть заполнены.", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        JSONObject send = new JSONObject();
-        try {
-            send.put("type", "register");
-            send.put("login", login);
-            send.put("password", password);
-            send.put("name", name);
-        } catch (JSONException ignored){}
-
-
-
+        
         JSONObject json = new JSONObject();
         try {
             json.put("login", login);
@@ -101,10 +91,11 @@ public class RegisterActivity extends AppCompatActivity {
             json.put("name", name);
         } catch (JSONException ignored) {}
         
+        pbLoading.setVisibility(View.VISIBLE);
         TcpClient.getInstance().httpPostRequest("registration", json, new HttpListener() {
             @Override
             public void onResponse(JSONObject message) {
-                //pbLoading.setVisibility(View.GONE);
+                pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.getBoolean("status")) {// если регистрация успешна
                         // Сохранение последних данных
@@ -127,7 +118,7 @@ public class RegisterActivity extends AppCompatActivity {
         
             @Override
             public void onFailure(String error) {
-                //pbLoading.setVisibility(View.GONE);
+                pbLoading.setVisibility(View.GONE);
                 Toast.makeText(RegisterActivity.this, "Ошибка http запроса:\n" + error, Toast.LENGTH_SHORT).show();
             }
 

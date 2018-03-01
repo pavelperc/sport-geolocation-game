@@ -153,14 +153,14 @@ public class GoogleMapsActivity extends AppCompatActivity
     MyTeammatesAdapter myTeammatesAdapter;
     List<Player> myTeammates;
     
-//    ProgressBar pbLoading;
+    ProgressBar pbLoading;
     
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_maps);
-//        pbLoading = (ProgressBar) findViewById(R.id.pbLoading); 
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading); 
     
         // Загружаем в оперативную память значок флажка
         whiteFlagBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.white_flag);
@@ -333,9 +333,16 @@ public class GoogleMapsActivity extends AppCompatActivity
             @Override
             public void onConnectionError(String error) {
                 try { // на случай если активти уже закрыта.
-//                    Toast.makeText(GoogleMapsActivity.this, error, Toast.LENGTH_SHORT).showCollapsed();
+                    
+                    
+                    
                     showConnectionErrorAlert(error, this);
                     Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
+                    
+                    // отключаем все кружочки загрузки
+                    if (bottomSheetHandler != null)
+                        bottomSheetHandler.pbLoadingBottomSheet.setVisibility(View.GONE);
+                    
                 
                 } catch (Exception e) {
                     Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
@@ -771,7 +778,6 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     @Override
     public void onTCPMessageReceived(JSONObject jo) {
-//        pbLoading.setVisibility(View.GONE);
         try {
             Log.d("my_tag", "tcp received: " + jo.toString());
             if (jo.toString().equals("{\"status\":\"Connection successfull\"}"))
@@ -802,6 +808,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     break;
                 case "start_game":
+                    pbLoading.setVisibility(View.GONE);
+                    
                     // если мы не создавали игру и не генерировали флажки - создаём их
                     if (!createGame) {
                         // удаляем все старые флажки
@@ -875,9 +883,9 @@ public class GoogleMapsActivity extends AppCompatActivity
                     }
                     break;
                 case "choose_team":
-                    
                     if (jo.getString("login").equals(myPlayer.login)) {
                         changeMyTeamColor(jo.getInt("team_color"));
+                        bottomSheetHandler.pbLoadingBottomSheet.setVisibility(View.GONE);
                         return;
                     }
                     
@@ -889,6 +897,8 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     break;
                 case "activate_flag":
+                    pbLoading.setVisibility(View.GONE);
+                    
                     if (jo.has("sync_energy") && jo.has("sync_energy_speed")) {
                         energyBlockHandler.setEnergy(jo.getInt("sync_energy"));
                         energyBlockHandler.setSpeed(jo.getInt("sync_energy_speed"));
