@@ -289,87 +289,87 @@ public class BottomSheetHandler {
         
         // Создание ботов
         
-        final Spinner spBotTeam = (Spinner) activity.findViewById(R.id.spBotTeam);
-        final ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(activity, android.R.layout.simple_spinner_item, activity.teamColors) {
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View v = super.getView(position, convertView, parent);
-                v.setBackgroundColor(getItem(position));
-                return v;
-            }
-        
-            @Override
-            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View v = super.getDropDownView(position, convertView, parent);
-                v.setBackgroundColor(getItem(position));
-                return v;
-            }
-        };
-    
-        spBotTeam.setAdapter(adapter);
-    
-        Button btnAddBot = (Button) activity.findViewById(R.id.btnAddBot);
-        btnAddBot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Создание http запроса для создания бота
-                
-                String[] names = {"Бот Петя", "Бот Вася", "Бот Федя", "Бот Юра", "Бот Сеня"};
-                
-                final JSONObject jo = new JSONObject();
-                try {
-                    jo.put("room_id", activity.roomId);
-                    jo.put("team_color", (int)spBotTeam.getSelectedItem());
-                    
-                    jo.put("name", names[botsCount % 5]);
-                    jo.put("login", "bot" + botsCount);
-                    jo.put("lat", activity.myLastLocation.getLatitude());
-                    jo.put("lng", activity.myLastLocation.getLongitude());
-                    
-                } catch (JSONException e) {
-                    
-                }
-    
-                botsCount++;
-                    
-                
-                // Вывод диалогового окна
-                
-                AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-                alertDialog.setTitle("Создать бота");
-                alertDialog.setMessage("Вы уверены?\n" + jo);
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                
-                                // Получение результатов
-                                TcpClient.getInstance().httpPostRequest("add_bot", jo, new HttpListener() {
-                                    @Override
-                                    public void onResponse(JSONObject message) {
-                                        try {
-                                            if (message.getBoolean("status")) {
-                                                
-                                            } else {
-                                                Toast.makeText(activity, "server returned error:\n" + message.getString("error"), Toast.LENGTH_SHORT).show();
-                                            }
-                                        } catch (JSONException e) {
-                                            Toast.makeText(activity, "JSONException:\n" + e, Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-        
-                                    @Override
-                                    public void onFailure(String error) {
-                                        Toast.makeText(activity, "Adding bot error:\n" + error, Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                                
-                            }
-                        });
-                alertDialog.show();
-            }
-        });
+//        final Spinner spBotTeam = (Spinner) activity.findViewById(R.id.spBotTeam);
+//        final ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(activity, android.R.layout.simple_spinner_item, activity.teamColors) {
+//            @NonNull
+//            @Override
+//            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+//                View v = super.getView(position, convertView, parent);
+//                v.setBackgroundColor(getItem(position));
+//                return v;
+//            }
+//        
+//            @Override
+//            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+//                View v = super.getDropDownView(position, convertView, parent);
+//                v.setBackgroundColor(getItem(position));
+//                return v;
+//            }
+//        };
+//    
+//        spBotTeam.setAdapter(adapter);
+//    
+//        Button btnAddBot = (Button) activity.findViewById(R.id.btnAddBot);
+//        btnAddBot.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // Создание http запроса для создания бота
+//                
+//                String[] names = {"Бот Петя", "Бот Вася", "Бот Федя", "Бот Юра", "Бот Сеня"};
+//                
+//                final JSONObject jo = new JSONObject();
+//                try {
+//                    jo.put("room_id", activity.roomId);
+//                    jo.put("team_color", (int)spBotTeam.getSelectedItem());
+//                    
+//                    jo.put("name", names[botsCount % 5]);
+//                    jo.put("login", "bot" + botsCount);
+//                    jo.put("lat", activity.myLastLocation.getLatitude());
+//                    jo.put("lng", activity.myLastLocation.getLongitude());
+//                    
+//                } catch (JSONException e) {
+//                    
+//                }
+//    
+//                botsCount++;
+//                    
+//                
+//                // Вывод диалогового окна
+//                
+//                AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+//                alertDialog.setTitle("Создать бота");
+//                alertDialog.setMessage("Вы уверены?\n" + jo);
+//                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+//                        new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                dialog.dismiss();
+//                                
+//                                // Получение результатов
+//                                TcpClient.getInstance().httpPostRequest("add_bot", jo, new HttpListener() {
+//                                    @Override
+//                                    public void onResponse(JSONObject message) {
+//                                        try {
+//                                            if (message.getBoolean("status")) {
+//                                                
+//                                            } else {
+//                                                Toast.makeText(activity, "server returned error:\n" + message.getString("error"), Toast.LENGTH_SHORT).show();
+//                                            }
+//                                        } catch (JSONException e) {
+//                                            Toast.makeText(activity, "JSONException:\n" + e, Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    }
+//        
+//                                    @Override
+//                                    public void onFailure(String error) {
+//                                        Toast.makeText(activity, "Adding bot error:\n" + error, Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                                
+//                            }
+//                        });
+//                alertDialog.show();
+//            }
+//        });
     }
     
     

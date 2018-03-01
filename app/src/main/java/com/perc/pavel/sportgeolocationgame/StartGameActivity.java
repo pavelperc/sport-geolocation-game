@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,12 +33,15 @@ public class StartGameActivity extends AppCompatActivity {
     EditText etRoomId;
     Button btnJoinGame;
     Button btnCreateGame;
+    ProgressBar pbLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_game);
         profile = (Profile) getIntent().getSerializableExtra("profile");
+        
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         
         sbTeamsNumber = (SeekBar) findViewById(R.id.sbTeamsNumber);
         tvTeams = (TextView) findViewById(R.id.tvTeams);
@@ -96,7 +100,7 @@ public class StartGameActivity extends AppCompatActivity {
         final ArrayList<Integer> teamColors = new ArrayList<>(teamColorsFull.subList(0, sbTeamsNumber.getProgress() + 1));
         
         
-        
+        pbLoading.setVisibility(View.VISIBLE);
         
         // отправка запроса на создание комнаты
         
@@ -114,6 +118,7 @@ public class StartGameActivity extends AppCompatActivity {
         TcpClient.getInstance().httpPostRequest("create_room", json, new HttpListener() {
             @Override
             public void onResponse(JSONObject message) {
+                pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.has("error")) {
                         Toast.makeText(StartGameActivity.this, "Error: " + message.getString("error"), Toast.LENGTH_SHORT).show();
@@ -135,6 +140,7 @@ public class StartGameActivity extends AppCompatActivity {
     
             @Override
             public void onFailure(String error) {
+                pbLoading.setVisibility(View.GONE);
                 Toast.makeText(StartGameActivity.this, "Failure: " + error, Toast.LENGTH_SHORT).show();
             }
         });
@@ -147,6 +153,8 @@ public class StartGameActivity extends AppCompatActivity {
             return;
         }
         final int roomId = Integer.parseInt(etRoomId.getText().toString());
+    
+        pbLoading.setVisibility(View.VISIBLE);
         
         // отправка запроса на подключение к комнате
         
@@ -159,6 +167,7 @@ public class StartGameActivity extends AppCompatActivity {
         TcpClient.getInstance().httpPostRequest("connect_to_room", json, new HttpListener() {
             @Override
             public void onResponse(JSONObject message) {
+                pbLoading.setVisibility(View.GONE);
                 try {
                     if (message.has("error")) {
                         Toast.makeText(StartGameActivity.this, "Error: " + message.getString("error"), Toast.LENGTH_SHORT).show();
@@ -185,6 +194,7 @@ public class StartGameActivity extends AppCompatActivity {
         
             @Override
             public void onFailure(String error) {
+                pbLoading.setVisibility(View.GONE);
                 Toast.makeText(StartGameActivity.this, "Failure: " + error, Toast.LENGTH_SHORT).show();
             }
         });
