@@ -417,16 +417,18 @@ public class BottomSheetHandler {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View v = super.getView(position, convertView, parent);
-                v.setBackgroundColor(getItem(position));
-                return v;
+                TextView tv = (TextView) super.getView(position, convertView, parent);
+                tv.setBackgroundColor(getItem(position));
+                tv.setText("  ");
+                return tv;
             }
             
             @Override
             public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View v = super.getDropDownView(position, convertView, parent);
-                v.setBackgroundColor(getItem(position));
-                return v;
+                TextView tv = (TextView) super.getDropDownView(position, convertView, parent);
+                tv.setBackgroundColor(getItem(position));
+                tv.setText("  ");
+                return tv;
             }
         };
         
@@ -533,7 +535,7 @@ public class BottomSheetHandler {
             return;
         
         selectedFlag = flag;
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     
     
         // обновление кнопки, tvFlagInfo и расчёт расстояния и стоимости флага

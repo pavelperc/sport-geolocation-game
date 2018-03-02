@@ -201,7 +201,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         
         // добавляем себя в список игроков
         myPlayer = new Player(myProfile.getLogin(), myProfile.getName(), Player.NO_TEAM_COLOR);
-        playersMap.put(myPlayer.login, myPlayer);
+//        playersMap.put(myPlayer.login, myPlayer);
         
         // создание выдвигающегося экрана снизу и списка игроков, привязанного к teamSharingAdapter
         bottomSheetHandler = new BottomSheetHandler(this);
@@ -310,7 +310,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     // настраиваем TCP после того, как добавили всех пользователей в комнате
                     setupTCP();
                 }
-    
+                
                 @Override
                 public void onFailure(String error) {
                     setupTCP();
@@ -927,10 +927,6 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     Player pll = playersMap.get(jo.getString("login"));
                     updatePlayer(pll, jo.getInt("team_color"));
-                    
-                    if (pll.hasCoords())
-                        pll.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, pll.teamColor));
-                    
                     break;
                 case "activate_flag":
                     pbLoading.setVisibility(View.GONE);
@@ -1023,8 +1019,16 @@ public class GoogleMapsActivity extends AppCompatActivity
     /** Добавляем в players и обновляем все списки. Маркеры не обновляются!
      * Перед вызовом этого метода необходимо проверить, что мы не передаём клон myPlayer*/
     private void addPlayer(Player p) {
-        // SortedList вызовет соответствующий notify если нужно
-        players.add(p);
+        // Считаем, что если логин есть в playersMap, то он есть и в players
+        if (playersMap.containsKey(p.login)) {
+            // в старый элемент добавляем новый цвет
+            updatePlayer(playersMap.get(p.login), p.teamColor);
+            return;
+        } else {
+            // SortedList вызовет соответствующий notify если нужно
+            players.add(p);
+        }
+        
         playersMap.put(p.login, p);
         Log.d("my_tag", "put player in map: " + p.login);
         
@@ -1035,7 +1039,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         }
     }
     
-    /** Обновляем все списки в bottomSheet и myTeammates. Маркеры не обновляются!*/
+    /** Обновляем все списки в bottomSheet и myTeammates. Маркеры ОБНОВЛЯЮТСЯ!*/
     private void updatePlayer(Player item, int teamColor) {
         
         // !!!Обязательно нужно найти позиции элементов в SortedList до их изменения!!!
@@ -1060,6 +1064,9 @@ public class GoogleMapsActivity extends AppCompatActivity
             myTeammates.add(item);
             myTeammatesAdapter.notifyItemInserted(myTeammates.size() - 1);
         }
+        
+        if (item.hasCoords() && item.hasMarker())
+            item.getMarker().setIcon(getColoredImage(R.drawable.white_arrow, item.teamColor));
     }
     
     
@@ -1170,6 +1177,7 @@ public class GoogleMapsActivity extends AppCompatActivity
     
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         stopLocationUpdates();
         stopPlayersUpdates();
         TcpClient.getInstance().stopClient();
@@ -1177,9 +1185,8 @@ public class GoogleMapsActivity extends AppCompatActivity
         TcpClientFake.getInstance().stopClient();
         TcpClientFake.instance = null;
         
-        if (energyBlockHandler != null)
+//        if (energyBlockHandler != null)
 //            energyBlockHandler.timer.cancel();
-        super.onDestroy();
     }
     
     
