@@ -13,7 +13,7 @@ public class EnergyBlockHandler {
     static int INTERVAL_MS = 1000;
     
     static int getFlagCost(Flag flag, double distance, int myTeamColor) {
-        int cost = ((int) distance + 5) * 10;// все стоимости увеличиваем в 10 раз.
+        int cost = ((int) distance + 5) * 2;// все стоимости увеличиваем в 2 раза.
         
         if (flag.teamColor != myTeamColor)// если это флаг чужой команды
             cost *= 2;
@@ -31,7 +31,7 @@ public class EnergyBlockHandler {
     TextView tvEnergyValue;
     TextView tvEnergySpeed;
     
-    CountDownTimer timer;
+//    CountDownTimer timer;
     
     EnergyBlockHandler(final GoogleMapsActivity activity) {
         this.activity = activity;
@@ -42,21 +42,21 @@ public class EnergyBlockHandler {
         tvEnergySpeed = (TextView) activity.findViewById(R.id.tvEnergySpeed);
         tvEnergySpeed.setText("+" + speed);
         
-        timer = new CountDownTimer(86400000L/*24h*/, INTERVAL_MS) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                addEnergy(getSpeed());
-                
-                activity.bottomSheetHandler.updateSelectedFlagBar();
-                
-            }
-    
-            @Override
-            public void onFinish() {
-                
-            }
-        };
-        timer.start();
+//        timer = new CountDownTimer(86400000L/*24h*/, INTERVAL_MS) {
+//            @Override
+//            public void onTick(long millisUntilFinished) {
+//                addEnergy(getSpeed());
+//                
+//                activity.bottomSheetHandler.updateSelectedFlagBar();
+//                
+//            }
+//    
+//            @Override
+//            public void onFinish() {
+//                
+//            }
+//        };
+//        timer.start();
         
     }
     

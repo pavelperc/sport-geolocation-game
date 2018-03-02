@@ -210,8 +210,6 @@ public class BottomSheetHandler {
                     jo.put("flags", ja);
                     
                     
-                    
-                    
 //                    Log.d("my_tag", "JSON WITH FLAGS:\n");
 //                    int maxLogSize = 1000;
 //                    String veryLongString = jo.toString();
@@ -225,6 +223,15 @@ public class BottomSheetHandler {
                     activity.pbLoading.setVisibility(View.VISIBLE);
                     TcpClient.getInstance().sendMessage(jo);
 //                    activity.onTCPMessageReceived(jo);
+                    
+                    
+                    // Упрощённый http запрос начала игры
+                    
+                    jo = new JSONObject();
+                    jo.put("room_id", activity.roomId);
+                    
+                    TcpClient.getInstance().httpPostRequest("start_game", jo, null);
+                    
                     
                 } catch (JSONException ignored) {
                 }
@@ -421,9 +428,8 @@ public class BottomSheetHandler {
                     
                     
                     
-                    
                     pbLoadingBottomSheet.setVisibility(View.VISIBLE);
-                    TcpClient.getInstance().sendMessage(jo);
+                    TcpClient.getInstance().httpPostRequest("choose_team", jo, null);
 //                    activity.onTCPMessageReceived(jo);
                 } catch (JSONException e) {
                 }
@@ -481,14 +487,16 @@ public class BottomSheetHandler {
                     jo.put("color_to_change", activity.myPlayer.teamColor);
                     // количество энергии, нужное на захват флага
                     jo.put("cost", energyFlagCost);
-                    // текущая энергия команды до захвата флага
-                    jo.put("sync_energy", activity.energyBlockHandler.getEnergy());
-                    // скорость восстановления энергии без учёта нового флага
-                    jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
-                    
-                    
+//                    // текущая энергия команды до захвата флага
+//                    jo.put("sync_energy", activity.energyBlockHandler.getEnergy());
+//                    // скорость восстановления энергии без учёта нового флага
+//                    jo.put("sync_energy_speed", activity.energyBlockHandler.getSpeed());
+                    jo.put("old_color", selectedFlag.teamColor);
+                    jo.put("was_activated", selectedFlag.activated);
+                    jo.put("room_id", activity.roomId);
                     activity.pbLoading.setVisibility(View.VISIBLE);
-                    TcpClient.getInstance().sendMessage(jo);
+                    TcpClient.getInstance().httpPostRequest("activate_flag", jo, null);
+//                    TcpClient.getInstance().sendMessage(jo);
 //                    activity.onTCPMessageReceived(jo);
                 } catch (JSONException e) {
                 }
@@ -528,10 +536,10 @@ public class BottomSheetHandler {
         // и на его захват должно быть достаточно энергии
         boolean canPickFlag = !(selectedFlag.activated
                 && selectedFlag.teamColor == activity.myPlayer.teamColor)
-                && activity.energyBlockHandler.getEnergy() > energyFlagCost;
-    
+                && activity.energyBlockHandler.getEnergy() >= energyFlagCost;
+        
         btnPickFlag.setEnabled(canPickFlag);
-    
+        
 //        // обновление линии от нашего игрока до флага
 //        if (line != null)
 //            line.remove();

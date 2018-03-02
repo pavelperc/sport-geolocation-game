@@ -222,6 +222,7 @@ class TcpClient {
                             public void run() {
                                 // пытаемся прочитать сообщение в этом же потоке.
                                 try {
+                                    Log.d("my_tag", "tcp received: " + serverMessage);
                                     JSONObject jo = new JSONObject(serverMessage);
                                     if (jo.has("error")) {// сервер не понял наш json
                                         tcpConnectionListener.onConnectionError("server returned error: " + jo.getString("error"));
@@ -332,6 +333,8 @@ class TcpClient {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, final IOException e) {
+                if (httpListener == null)
+                    return;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -342,6 +345,8 @@ class TcpClient {
             
             @Override
             public void onResponse(Call call, final Response response) throws IOException {
+                if (httpListener == null)
+                    return;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

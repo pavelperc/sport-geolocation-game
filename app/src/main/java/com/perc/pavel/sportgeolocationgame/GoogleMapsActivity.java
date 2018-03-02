@@ -23,7 +23,6 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.util.TimeUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.SortedList;
@@ -66,8 +65,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -75,17 +72,12 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.TimerTask;
-import java.util.TreeMap;
 
 import okhttp3.HttpUrl;
 
@@ -209,7 +201,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         bottomSheetHandler = new BottomSheetHandler(this);
         players = bottomSheetHandler.teamSharingAdapter.getPlayers();
         addPlayer(myPlayer);
-    
+        
     
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -310,45 +302,10 @@ public class GoogleMapsActivity extends AppCompatActivity
             setupTCP();
         }
         
-        
     }
     
     private void setupTCP() {
-        TcpClient.getInstance().startAsync(new TcpConnectionListener() {
-            @Override
-            public void onConnected() {
-                Log.d(TcpClient.SERVER_LOG, "in onConnected.");
-                Toast.makeText(GoogleMapsActivity.this, "connected tcp", Toast.LENGTH_SHORT).show();
-                try {
-                    JSONObject jo = new JSONObject();
-                    jo.put("type", "connection");
-                    jo.put("login", myPlayer.login);
-                    TcpClient.getInstance().sendMessage(jo);
-                    
-                    
-                } catch (JSONException ignored) {
-                }
-            }
-        
-            @Override
-            public void onConnectionError(String error) {
-                try { // на случай если активти уже закрыта.
-                    
-                    
-                    
-                    showConnectionErrorAlert(error, this);
-                    Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
-                    
-                    // отключаем все кружочки загрузки
-                    if (bottomSheetHandler != null)
-                        bottomSheetHandler.pbLoadingBottomSheet.setVisibility(View.GONE);
-                    
-                
-                } catch (Exception e) {
-                    Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
-                }
-            }
-        });
+        TcpClient.getInstance().startAsync(new ConnectionListener(false));
         
         TcpClient.getInstance().addMessageListener(this);
         
@@ -359,9 +316,9 @@ public class GoogleMapsActivity extends AppCompatActivity
      * Вывести диалоговое окно
      *
      * @param error              Сообщение об ошибке
-     * @param connectionListener Слушатель для переподключения. может быть null
+     * param connectionListener Слушатель для переподключения. может быть null
      */
-    private void showConnectionErrorAlert(String error, final TcpConnectionListener connectionListener) {
+    private void showConnectionErrorAlert(String error) {
         AlertDialog.Builder builder = new AlertDialog.Builder(GoogleMapsActivity.this);
         String serverIsStopped = TcpClient.getInstance().isTcpRunning() ? "Сервер не остановлен." : "Сервер остановлен.";
         builder.setTitle("Ошибка работы сервера!\n" + serverIsStopped)
@@ -376,16 +333,70 @@ public class GoogleMapsActivity extends AppCompatActivity
                 .setPositiveButton("Reconnect", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        
                         // если мы не закончили tcp connection, заканчиваем
-                        // потом ещё раз запускаемся заново с тем же листенером.
-                        if (connectionListener != null)
-                            TcpClient.getInstance().reconnect(connectionListener);
+                        // потом ещё раз запускаемся заново с другим листенером.
+//                        if (connectionListener != null) 
+                        
+                        TcpClient.getInstance().reconnect(new ConnectionListener(true));
                         dialog.cancel();
                     }
                 });
         AlertDialog alert = builder.create();
         alert.show();
     }
+    
+    
+    class ConnectionListener implements TcpConnectionListener {
+    
+    
+        private boolean reconnection;
+    
+        ConnectionListener(boolean reconnection) {
+            this.reconnection = reconnection;
+        }
+        
+        @Override
+        public void onConnected() {
+            Log.d(TcpClient.SERVER_LOG, "in onConnected.");
+            Toast.makeText(GoogleMapsActivity.this, "connected tcp", Toast.LENGTH_SHORT).show();
+            try {
+                JSONObject jo = new JSONObject();
+                if (reconnection) {
+                    jo.put("type", "reconnection");
+                }
+                else {
+                    jo.put("type", "connection");
+                }
+                jo.put("login", myPlayer.login);
+                TcpClient.getInstance().sendMessage(jo);
+            
+            
+            } catch (JSONException ignored) {
+            }
+        }
+    
+        @Override
+        public void onConnectionError(String error) {
+            try { // на случай если активти уже закрыта.
+            
+            
+            
+                showConnectionErrorAlert(error);
+                Log.d(TcpClient.SERVER_LOG, "showed alertDialog");
+            
+                // отключаем все кружочки загрузки
+                if (bottomSheetHandler != null)
+                    bottomSheetHandler.pbLoadingBottomSheet.setVisibility(View.GONE);
+            
+            
+            } catch (Exception e) {
+                Log.d(TcpClient.SERVER_LOG, "exception in activity onConnectionError: " + e.getMessage());
+            }
+        }
+    }
+    
+    
     
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -779,7 +790,6 @@ public class GoogleMapsActivity extends AppCompatActivity
     @Override
     public void onTCPMessageReceived(JSONObject jo) {
         try {
-            Log.d("my_tag", "tcp received: " + jo.toString());
             if (jo.toString().equals("{\"status\":\"Connection successfull\"}"))
                 return;
             
@@ -918,6 +928,12 @@ public class GoogleMapsActivity extends AppCompatActivity
                     if (endGame)
                         finishGame();
                     break;
+                case "update_energy":
+                    if (energyBlockHandler != null) {
+                        energyBlockHandler.setEnergy(jo.getInt("energy"));
+                        energyBlockHandler.setSpeed(jo.getInt("speed"));
+                    }
+                    break;
                 default:
                     Toast.makeText(GoogleMapsActivity.this, "Unknown TCP message:\n" + jo.toString(), Toast.LENGTH_LONG).show();
             }
@@ -1055,16 +1071,16 @@ public class GoogleMapsActivity extends AppCompatActivity
     public void pickFlag(final Flag flag, int cost, int colorToChange) {
         bottomSheetHandler.hideFlagBar();
     
-        // изменение энергии, если это наша команда
-        if (colorToChange == myPlayer.teamColor) {
-            energyBlockHandler.addSpeed(1);
-            energyBlockHandler.addEnergy(-cost);
-        }
-        // если это был активированный флаг из нашей команды, а его хотят забрать
-        else if (flag.teamColor == myPlayer.teamColor && flag.activated) {
-            // уменьшаем скорость нашей энергии
-            energyBlockHandler.addSpeed(-1);
-        }
+//        // изменение энергии, если это наша команда
+//        if (colorToChange == myPlayer.teamColor) {
+//            energyBlockHandler.addSpeed(1);
+//            energyBlockHandler.addEnergy(-cost);
+//        }
+//        // если это был активированный флаг из нашей команды, а его хотят забрать
+//        else if (flag.teamColor == myPlayer.teamColor && flag.activated) {
+//            // уменьшаем скорость нашей энергии
+//            energyBlockHandler.addSpeed(-1);
+//        }
         
         
         flag.activate();
@@ -1136,7 +1152,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         TcpClientFake.instance = null;
         
         if (energyBlockHandler != null)
-            energyBlockHandler.timer.cancel();
+//            energyBlockHandler.timer.cancel();
         super.onDestroy();
     }
     
@@ -1259,7 +1275,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     jo.put("lat", location.getLatitude());
                     jo.put("lng", location.getLongitude());
                     jo.put("login", myPlayer.login);
-        
+                    
                     TcpClient.getInstance().sendMessage(jo);
                 } catch (JSONException e) {}
                 
@@ -1270,7 +1286,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     
                     myLastLocation = location;
                     myLastLocation.setBearing(newBearing);
-    
+                    
                     // Поворот маркера
                     myLocationMarker.setRotation(location.getBearing());
     
@@ -1280,6 +1296,9 @@ public class GoogleMapsActivity extends AppCompatActivity
                     markerAnimator.setDuration(500);
                     markerAnimator.start();
                 }
+                
+                // обновление стоимости флажка, если он выбран
+                bottomSheetHandler.updateSelectedFlagBar();
             }
             
         }

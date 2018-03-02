@@ -182,7 +182,7 @@ public class StartGameActivity extends AppCompatActivity {
                         Intent intent = new Intent(StartGameActivity.this, GoogleMapsActivity.class);
                         intent.putExtra("profile", profile);
                         intent.putExtra("teamColors", teamColors);
-                                                
+                        
                         intent.putExtra("roomId", roomId);
                         intent.putExtra("createGame", false);
                         startActivity(intent);
