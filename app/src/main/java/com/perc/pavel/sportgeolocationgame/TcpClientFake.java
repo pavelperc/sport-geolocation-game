@@ -22,11 +22,11 @@ import java.util.Random;
  */
 class TcpClientFake {
     
-    final String[] names = {"Fish", "Cat"};
-    final String[] logins = {"fish", "cat"};
-//    final String[] names = {"Fish", "Cat", "Dog", "Parrot", "Cow", "Hen", "Pig", "Horse", "Sheep"};
-//    final String[] logins = {"fish", "cat", "dog", "parrot", "cow", "hen", "pig", "horse", "sheep"};
-//    
+//    final String[] names = {"Fish", "Cat"};
+//    final String[] logins = {"fish", "cat"};
+    final String[] names = {"Fish", "Cat", "Dog", "Parrot", "Cow", "Hen", "Pig", "Horse", "Sheep"};
+    final String[] logins = {"fish", "cat", "dog", "parrot", "cow", "hen", "pig", "horse", "sheep"};
+
     private Thread thread;
     
     static TcpClientFake instance;

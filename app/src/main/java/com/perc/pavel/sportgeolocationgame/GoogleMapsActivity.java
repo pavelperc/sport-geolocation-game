@@ -602,7 +602,7 @@ public class GoogleMapsActivity extends AppCompatActivity
                     .strokeColor(getResources().getColor(R.color.colorPrimary)));
         }
         
-        //startPlayersUpdates();
+//        startPlayersUpdates();
     }
     
     private void startPlayersUpdates() {

@@ -295,10 +295,10 @@
                         android:id="@+id/btnPickFlag"
                         android:layout_width="44dp"
                         android:layout_height="60dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
                         android:layout_marginRight="5dp"
-                        android:background="@drawable/flag_style"/>
+                        android:background="@drawable/flag_style"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -315,7 +315,7 @@
                             android:layout_marginBottom="20dp"
                             android:layout_marginLeft="10dp"
                             android:layout_marginRight="10dp"
-                            android:text="TextView"
+                            android:text="1\n2\n3\n4\n5"
                             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                             android:textColor="@android:color/white"
                             android:textStyle="bold"/>

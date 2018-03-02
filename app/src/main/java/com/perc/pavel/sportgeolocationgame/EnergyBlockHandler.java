@@ -15,7 +15,7 @@ public class EnergyBlockHandler {
     static int INTERVAL_MS = 1000;
     
     static int getFlagCost(Flag flag, double distance, int myTeamColor) {
-        int cost = ((int) distance + 5) * 2;// все стоимости увеличиваем в 2 раза.
+        int cost = ((int) distance + 10) * 2;// все стоимости увеличиваем в 2 раза.
         
         if (flag.teamColor != myTeamColor)// если это флаг чужой команды
             cost *= 2;
