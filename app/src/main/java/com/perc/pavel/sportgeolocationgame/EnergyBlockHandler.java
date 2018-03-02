@@ -1,5 +1,7 @@
 package com.perc.pavel.sportgeolocationgame;
 
+import android.content.res.AssetManager;
+import android.graphics.Typeface;
 import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.TextView;
@@ -27,10 +29,11 @@ public class EnergyBlockHandler {
     private int speed = 5;
     
     GoogleMapsActivity activity;
-    
+
     TextView tvEnergyValue;
     TextView tvEnergySpeed;
-    
+
+
 //    CountDownTimer timer;
     
     EnergyBlockHandler(final GoogleMapsActivity activity) {

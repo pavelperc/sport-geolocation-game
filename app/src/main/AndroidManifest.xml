@@ -56,7 +56,7 @@
             android:label="@string/title_activity_google_maps"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateHidden">
+            android:windowSoftInputMode="adjustPan">
         </activity>
         <activity android:name=".RulesActivity">
         </activity>

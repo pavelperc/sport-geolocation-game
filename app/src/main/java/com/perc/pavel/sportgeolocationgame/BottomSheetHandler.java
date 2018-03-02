@@ -3,7 +3,10 @@ package com.perc.pavel.sportgeolocationgame;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,14 +53,24 @@ public class BottomSheetHandler {
     
     SeekBar sbCircleSize;
     SeekBar sbFlagsCount;
-    
+
+    TextView tvCircle;
+    TextView tvCirceSizeOut;
+    TextView tvFlags;
+    TextView tvFlagsCountOut;
+    TextView tvPlayersName;
+    TextView tvSelectTeam;
+    Button btnGenerateFlags;
+    Button btnStartGame;
+
     ProgressBar pbLoadingBottomSheet;
     
     TextView tvFlagInfo;
     Button btnPickFlag;
     private Flag selectedFlag;
     int energyFlagCost;
-    
+
+
     private int botsCount = 0;
     
     
@@ -89,6 +102,7 @@ public class BottomSheetHandler {
         // получение вью нижнего экрана
         LinearLayout llBottomSheet = (LinearLayout) activity.findViewById(R.id.bottom_sheet);
         final ImageView arrow = (ImageView) activity.findViewById(R.id.arrow);
+        arrow.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         // Экран активити с картой
         final RelativeLayout rlMainScreen = (RelativeLayout) activity.findViewById(R.id.rlMainScreen);
         
@@ -103,7 +117,7 @@ public class BottomSheetHandler {
         // настройка поведения нижнего экрана
         bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
         // максимальный подъём relative layout. при скрытом bottom sheet - -8dp из-за тени на b. sh.
-        final int shadowHeight = convertDpToPixels(8);
+        final int shadowHeight = convertDpToPixels(0);
         final int maxMarginPx = bottomSheetBehavior.getPeekHeight() - shadowHeight;
         
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -172,7 +186,7 @@ public class BottomSheetHandler {
         
         setupTeamSharing();
     }
-    
+
     
     private void setupCreateGame() {
         sbCircleSize = (SeekBar) activity.findViewById(R.id.sbCircleSize);
@@ -181,8 +195,8 @@ public class BottomSheetHandler {
         final TextView tvFlagsCount = (TextView) activity.findViewById(R.id.tvFlagsCount);
         Button btnGenerateFlags = (Button) activity.findViewById(R.id.btnGenerateFlags);
         final Button btnStartGame = (Button) activity.findViewById(R.id.btnStartGame);
-        
-        
+
+
         btnStartGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -385,12 +399,20 @@ public class BottomSheetHandler {
      */
     private void setupChooseTeam() {
         Spinner spChooseTeam = (Spinner) activity.findViewById(R.id.spChooseTeam);
-        
+
         
         final List<Integer> extendedTeamColors = new ArrayList<>(activity.teamColors);
         extendedTeamColors.add(0, Player.NO_TEAM_COLOR);
-        
-        
+
+        tvCircle = (TextView) activity.findViewById(R.id.tvCircle);
+        tvCirceSizeOut = (TextView) activity.findViewById(R.id.tvCircleSize);
+        tvFlags = (TextView) activity.findViewById(R.id.tvFlags);
+        tvFlagsCountOut = (TextView) activity.findViewById(R.id.tvFlagsCount);
+        tvPlayersName = (TextView) activity.findViewById(R.id.tvPlayersNames);
+        tvSelectTeam = (TextView) activity.findViewById(R.id.tvSelectTeam);
+        btnGenerateFlags = (Button) activity.findViewById(R.id.btnGenerateFlags);
+        btnStartGame = (Button) activity.findViewById(R.id.btnStartGame);
+
         final ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(activity, android.R.layout.simple_spinner_item, extendedTeamColors) {
             @NonNull
             @Override

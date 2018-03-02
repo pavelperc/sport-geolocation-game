@@ -138,7 +138,9 @@ public class GoogleMapsActivity extends AppCompatActivity
     private RelativeLayout rlChat;
     private TextView tvMissedMsg;
     TextView tvRoomId;
+    LinearLayout llRoomId;
     TextView tvTimer;
+    LinearLayout llTimer;
     private int missedMsgCount = 0;
     
     
@@ -174,12 +176,16 @@ public class GoogleMapsActivity extends AppCompatActivity
         Typeface PhosphateInline = Typeface.createFromAsset(getAssets(), "fonts/PhosphateInline.ttf");
 
         tvRoomId = (TextView) findViewById(R.id.tvRoomId);
+        llRoomId = (LinearLayout) findViewById(R.id.ll_RoomId);
         tvTimer = (TextView) findViewById(R.id.tvTimer);
-        tvTimer.setVisibility(View.GONE);
-        
+        llTimer = (LinearLayout) findViewById(R.id.ll_Timer);
+        llTimer.setVisibility(View.GONE);
+
+
         tvRoomId.setTypeface(PhosphateInline);
-        tvRoomId.setText("ROOM ID: " + roomId);
-        tvRoomId.setVisibility(View.VISIBLE);
+        tvTimer.setTypeface(PhosphateInline);
+        tvRoomId.setText("" + roomId);
+        llRoomId.setVisibility(View.VISIBLE);
         
         
         // Создание справа списка с моими сокомандниками
@@ -201,7 +207,20 @@ public class GoogleMapsActivity extends AppCompatActivity
         bottomSheetHandler = new BottomSheetHandler(this);
         players = bottomSheetHandler.teamSharingAdapter.getPlayers();
         addPlayer(myPlayer);
-        
+
+        Typeface Matiz = Typeface.createFromAsset(getAssets(), "fonts/Matiz.ttf");
+
+        bottomSheetHandler.tvSelectTeam.setTypeface(Matiz);
+        bottomSheetHandler.tvPlayersName.setTypeface(Matiz);
+        bottomSheetHandler.tvFlagsCountOut.setTypeface(Matiz);
+        bottomSheetHandler.tvFlags.setTypeface(Matiz);
+        bottomSheetHandler.tvCirceSizeOut.setTypeface(Matiz);
+        bottomSheetHandler.tvCircle.setTypeface(Matiz);
+
+        Typeface PhosphateSolid = Typeface.createFromAsset(getAssets(), "fonts/PhosphateSolid.ttf");
+
+        bottomSheetHandler.btnStartGame.setTypeface(PhosphateSolid);
+        bottomSheetHandler.btnGenerateFlags.setTypeface(PhosphateSolid);
     
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -842,14 +861,21 @@ public class GoogleMapsActivity extends AppCompatActivity
                     // закрываем bottom_sheet
                     bottomSheetHandler.hide();
                     bottomSheetHandler.prepareForFlags();
-                    
+
+                    Typeface PhosphateInline = Typeface.createFromAsset(getAssets(), "fonts/PhosphateInline.ttf");
+
                     energyBlockHandler = new EnergyBlockHandler(this);
+
+                    energyBlockHandler.tvEnergyValue.setTypeface(PhosphateInline);
+                    energyBlockHandler.tvEnergySpeed.setTypeface(PhosphateInline);
+
+
                     
                     Toast.makeText(this, "GAME STARTED!!!", Toast.LENGTH_SHORT).show();
     
     
-                    tvRoomId.setVisibility(View.GONE);
-                    tvTimer.setVisibility(View.VISIBLE);
+                    llRoomId.setVisibility(View.GONE);
+                    llTimer.setVisibility(View.VISIBLE);
                     
                     
                     // начало таймера обратного отсчёта до конца игры
@@ -1227,9 +1253,7 @@ public class GoogleMapsActivity extends AppCompatActivity
         Button b = (Button) v;
         if (rlChat.getVisibility() == View.VISIBLE) {// скрыть 
             rlChat.setVisibility(View.GONE);
-            b.setText("показ. чат");
-            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_arrow_down_black_24dp, 0);
-            
+            b.setBackgroundDrawable(getResources().getDrawable(R.drawable.chat));
             // сброс пропущенных сообщений
             missedMsgCount = 0;
             // не показываем значок до первого пропущенного сообщения
@@ -1238,9 +1262,8 @@ public class GoogleMapsActivity extends AppCompatActivity
             
         } else {// показать
             rlChat.setVisibility(View.VISIBLE);
-            b.setText("скрыть чат");
-            b.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_expand_arrow_up_black_24dp, 0);
-            
+            b.setBackgroundDrawable(getResources().getDrawable(R.drawable.close));
+
             tvMissedMsg.setVisibility(View.INVISIBLE);
         }
     }
