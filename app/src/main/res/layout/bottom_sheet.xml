@@ -64,7 +64,7 @@
                         android:textColorHint="@color/colorPrimary"
                         android:textColor="@color/colorPrimary"
                         android:text="GENERATE FLAGS"
-                        android:textSize="25dp"/>
+                        android:textSize="23dp"/>
 
                     <Button
                         android:id="@+id/btnStartGame"
@@ -78,7 +78,7 @@
                         android:textColorHint="@color/colorPrimary"
                         android:textColor="@color/colorPrimary"
                         android:text="PLAY"
-                        android:textSize="25dp"/>
+                        android:textSize="23dp"/>
 
                 </LinearLayout>
 
@@ -105,7 +105,7 @@
                             android:text="Circle size: "
                             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="23sp"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -120,7 +120,7 @@
                             android:text="100"
                             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="23sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
 
@@ -149,7 +149,7 @@
                             android:text="Number of flags: "
                             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="23sp"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -164,7 +164,7 @@
                             android:text="30"
                             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                             android:textColor="@color/colorPrimary"
-                            android:textSize="22sp"
+                            android:textSize="23sp"
                             android:textStyle="bold"/>
 
                     </LinearLayout>
@@ -238,7 +238,7 @@
                     android:text="Players: "
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="22sp"
+                    android:textSize="23sp"
                     android:textStyle="bold"/>
 
                 <android.support.v7.widget.RecyclerView
@@ -268,7 +268,7 @@
                     android:text="Select a team: "
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="22sp"
+                    android:textSize="23sp"
                     android:textStyle="bold"/>
 
                 <Spinner
@@ -298,7 +298,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:layout_marginRight="5dp"
-                        android:background="@drawable/flag_active"/>
+                        android:background="@drawable/flag_style"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"

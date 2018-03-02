@@ -221,6 +221,7 @@ public class GoogleMapsActivity extends AppCompatActivity
 
         bottomSheetHandler.btnStartGame.setTypeface(PhosphateSolid);
         bottomSheetHandler.btnGenerateFlags.setTypeface(PhosphateSolid);
+        ((Button)findViewById(R.id.btnExpandChat)).setTypeface(PhosphateSolid);
     
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -1260,7 +1261,8 @@ public class GoogleMapsActivity extends AppCompatActivity
         Button b = (Button) v;
         if (rlChat.getVisibility() == View.VISIBLE) {// скрыть 
             rlChat.setVisibility(View.GONE);
-            b.setBackgroundDrawable(getResources().getDrawable(R.drawable.chat));
+            //b.setBackgroundDrawable(getResources().getDrawable(R.drawable.chat));
+
             // сброс пропущенных сообщений
             missedMsgCount = 0;
             // не показываем значок до первого пропущенного сообщения
@@ -1269,7 +1271,7 @@ public class GoogleMapsActivity extends AppCompatActivity
             
         } else {// показать
             rlChat.setVisibility(View.VISIBLE);
-            b.setBackgroundDrawable(getResources().getDrawable(R.drawable.close));
+            //b.setBackgroundDrawable(getResources().getDrawable(R.drawable.close));
 
             tvMissedMsg.setVisibility(View.INVISIBLE);
         }

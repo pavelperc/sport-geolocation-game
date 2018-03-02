@@ -194,10 +194,14 @@
                         <Button
                             android:id="@+id/btnExpandChat"
                             style="@style/Widget.AppCompat.Button"
-                            android:layout_width="55dp"
-                            android:layout_height="55dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
                             android:layout_gravity="start"
-                            android:background="@drawable/chat"
+                            android:background="@drawable/chat_style"
+                            android:text="CHAT"
+                            android:textSize="22sp"
+                            android:textColor="@color/colorPrimary"
+                            android:textColorHint="@color/colorPrimary"
                             android:onClick="btnExpandChatClick" />
 
                         <TextView
@@ -217,7 +221,7 @@
                     <LinearLayout
                         android:id="@+id/ll_RoomId"
                         android:layout_width="wrap_content"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginTop="10dp"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:background="@drawable/filled_rectangle_purple"
@@ -254,7 +258,7 @@
                         android:id="@+id/ll_Timer"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginTop="10dp"
                         android:background="@drawable/filled_rectangle_purple"
                         android:orientation="horizontal">
 
