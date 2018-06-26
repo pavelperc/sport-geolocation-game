@@ -1,10 +1,12 @@
 package com.perc.pavel.sportgeolocationgame;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.perc.pavel.sportgeolocationgame.serverworking.HttpListener;
+import com.perc.pavel.sportgeolocationgame.serverworking.TcpConnectionListener;
+import com.perc.pavel.sportgeolocationgame.serverworking.TcpMessageListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +22,7 @@ import java.util.Random;
 /**
  * Эмулятор сервера в режимах TCP и HTTP.
  */
-class TcpClientFake {
+public class TcpClientFake {
     
 //    final String[] names = {"Fish", "Cat"};
 //    final String[] logins = {"fish", "cat"};
@@ -31,7 +33,7 @@ class TcpClientFake {
     
     static TcpClientFake instance;
     
-    static TcpClientFake getInstance() {
+    public static TcpClientFake getInstance() {
         if (instance == null)
             instance = new TcpClientFake();
         return instance;
@@ -96,7 +98,7 @@ class TcpClientFake {
                         
                         final JSONObject jo = new JSONObject();
                         jo.put("type", "choose_team");
-                        jo.put("login", player.login);
+                        jo.put("login", player.getLogin());
                         jo.put("team_color", teamColors.get((i) % TcpClientFake.this.teamColors.size()));
 
 
@@ -132,13 +134,13 @@ class TcpClientFake {
                 Player player = players.get(i);
                 final JSONObject jo = new JSONObject();
                 jo.put("type", "cords");
-                jo.put("login", player.login);
+                jo.put("login", player.getLogin());
                 
-                player.lat += (rnd.nextDouble() - (double) i / players.size()) * llDelta;
-                player.lng += (rnd.nextDouble() - (double) i / players.size()) * llDelta;
+                player.setLat(player.getLat() + (rnd.nextDouble() - (double) i / players.size()) * llDelta);
+                player.setLng(player.getLng() + (rnd.nextDouble() - (double) i / players.size()) * llDelta);
                 
-                jo.put("lat", player.lat);
-                jo.put("lng", player.lng);
+                jo.put("lat", player.getLat());
+                jo.put("lng", player.getLng());
                 
                 handler.post(new Runnable() {
                     @Override
@@ -286,7 +288,7 @@ class TcpClientFake {
                     answer.put("response", 1);
                     int index = message.getJSONObject("activateFlag").getInt("index");
                     int color = message.getJSONObject("activateFlag").getInt("color");
-                    flags.get(index).teamColor = color;
+                    flags.get(index).setTeamColor(color);
                     
                     
                     break;

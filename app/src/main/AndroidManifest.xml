@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".EnterActivity"
+            android:name=".activities.EnterActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -32,11 +32,11 @@
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name=".MainMenuActivity"
+            android:name=".activities.MainMenuActivity"
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name=".StartGameActivity"
+            android:name=".activities.StartGameActivity"
             android:screenOrientation="portrait">
         </activity>
         <!--
@@ -52,7 +52,7 @@
             android:value="@string/google_maps_key"/>
 
         <activity
-            android:name=".GoogleMapsActivity"
+            android:name=".activities.GoogleMapsActivity"
             android:label="@string/title_activity_google_maps"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"

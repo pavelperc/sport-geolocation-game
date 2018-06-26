@@ -12,7 +12,7 @@
         android:id="@+id/rlMainScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="-8dp">
+        >
 
 
         <LinearLayout
@@ -53,16 +53,16 @@
                     android:layout_height="30dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="5dp"
-                    app:srcCompat="@drawable/energy" />
+                    app:srcCompat="@drawable/energy"/>
 
                 <TextView
                     android:id="@+id/tvEnergyValue"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:gravity="center_vertical"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginTop="5dp"
                     android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center_vertical"
                     android:text="0"
                     android:textColor="#FFFFFFFF"
                     android:textSize="24sp"/>
@@ -77,18 +77,18 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
-                    app:srcCompat="@drawable/speed" />
+                    android:layout_marginTop="5dp"
+                    app:srcCompat="@drawable/speed"/>
 
                 <TextView
                     android:id="@+id/tvEnergySpeed"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center_vertical"
                     android:text="+1"
                     android:textColor="#FFFFFFFF"
                     android:textSize="24sp"/>
@@ -111,7 +111,7 @@
                 android:visibility="visible">
 
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/reyclerview_message_list"
+                    android:id="@+id/rvMessageList"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_above="@+id/horizontal_line"
@@ -168,7 +168,7 @@
                         android:onClick="btnChatSendClick"
                         android:text="SEND"
                         android:textColor="@color/colorPrimary"
-                        android:textSize="14dp" />
+                        android:textSize="14dp"/>
 
                 </LinearLayout>
             </RelativeLayout>
@@ -198,11 +198,11 @@
                             android:layout_height="44dp"
                             android:layout_gravity="start"
                             android:background="@drawable/chat_style"
+                            android:onClick="btnExpandChatClick"
                             android:text="CHAT"
-                            android:textSize="22sp"
                             android:textColor="@color/colorPrimary"
                             android:textColorHint="@color/colorPrimary"
-                            android:onClick="btnExpandChatClick" />
+                            android:textSize="22sp"/>
 
                         <TextView
                             android:id="@+id/tvMissedMsg"
@@ -219,10 +219,10 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/ll_RoomId"
+                        android:id="@+id/llRoomId"
                         android:layout_width="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:layout_height="0dp"
+                        android:layout_marginTop="10dp"
                         android:layout_weight="1"
                         android:background="@drawable/filled_rectangle_purple"
                         android:orientation="horizontal">
@@ -231,31 +231,31 @@
                             android:id="@+id/imageViewDoor"
                             android:layout_width="wrap_content"
                             android:layout_height="43dp"
+                            android:paddingBottom="2dp"
                             android:paddingLeft="10dp"
                             android:paddingRight="5dp"
-                            android:paddingBottom="2dp"
                             android:paddingTop="2dp"
-                            app:srcCompat="@drawable/door" />
+                            app:srcCompat="@drawable/door"/>
 
                         <TextView
                             android:id="@+id/tvRoomId"
                             android:layout_width="wrap_content"
                             android:layout_height="43dp"
+                            android:gravity="bottom"
                             android:paddingBottom="2dp"
                             android:paddingRight="10dp"
                             android:paddingTop="2dp"
                             android:text=" ???"
                             android:textAllCaps="true"
-                            android:gravity="bottom"
                             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                             android:textColor="#FFFFFF"
                             android:textSize="32sp"
                             android:textStyle="bold"
-                            android:visibility="visible" />
+                            android:visibility="visible"/>
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/ll_Timer"
+                        android:id="@+id/llTimer"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginTop="10dp"
@@ -266,22 +266,22 @@
                             android:id="@+id/imageViewTimer"
                             android:layout_width="wrap_content"
                             android:layout_height="35dp"
+                            android:paddingBottom="2dp"
                             android:paddingLeft="5dp"
                             android:paddingRight="5dp"
-                            android:paddingBottom="2dp"
                             android:paddingTop="2dp"
-                            app:srcCompat="@drawable/timer" />
+                            app:srcCompat="@drawable/timer"/>
 
                         <TextView
                             android:id="@+id/tvTimer"
                             android:layout_width="wrap_content"
                             android:layout_height="35dp"
+                            android:gravity="bottom"
                             android:paddingBottom="2dp"
                             android:paddingRight="10dp"
                             android:paddingTop="2dp"
                             android:text="99:99"
                             android:textAllCaps="true"
-                            android:gravity="bottom"
                             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                             android:textColor="#FFFFFF"
                             android:textSize="24sp"
@@ -294,7 +294,8 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/rvTeammates"
-                    android:layout_width="wrap_content" android:layout_height="150dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="150dp"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:fadingEdgeLength="30dp"
@@ -378,7 +379,7 @@
             android:layout_marginBottom="30dp"
             android:layout_marginRight="16dp"
             android:orientation="vertical"
-            app:layout_anchor="@+id/bottom_sheet"
+            app:layout_anchor="@+id/llBottomSheet"
             app:layout_anchorGravity="top|right">
 
             <LinearLayout
@@ -431,11 +432,25 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:visibility="gone"/>
-        
+
     </RelativeLayout>
 
-    <include
-        layout="@layout/bottom_sheet"
-        android:visibility="visible"/>
+    <LinearLayout
+        android:id="@+id/llBottomSheetContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="78dp"
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+        <fragment
+            android:id="@+id/bottom_sheet_fragment"
+            android:name="com.perc.pavel.sportgeolocationgame.BottomSheetFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/bottom_sheet"/>
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

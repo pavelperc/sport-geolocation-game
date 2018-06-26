@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="fill_parent"
     android:background="@color/colorPrimaryDark"
-    tools:context="com.perc.pavel.sportgeolocationgame.EnterActivity">
+    tools:context="com.perc.pavel.sportgeolocationgame.activities.EnterActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

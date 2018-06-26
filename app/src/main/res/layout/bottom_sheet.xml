@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:id="@+id/bottom_sheet"
+              android:id="@+id/llBottomSheet"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical"
-              android:weightSum="1"
-              app:behavior_hideable="true"
-              app:behavior_peekHeight="78dp"
-              app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+              android:weightSum="1">
 
     <View
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/shape_gradient_top_shadow"
-        app:layout_anchor="@id/bottom_sheet"/>
+        app:layout_anchor="@id/llBottomSheet"/>
 
     <FrameLayout
         android:id="@+id/loading_and_background"
@@ -40,7 +37,7 @@
                 app:srcCompat="@drawable/ic_expand_arrow_up_black_24dp"/>
 
             <LinearLayout
-                android:id="@+id/ll_create_game"
+                android:id="@+id/llCreateGame"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -58,12 +55,12 @@
                         android:layout_width="233dp"
                         android:layout_height="47dp"
                         android:layout_weight="1"
+                        android:background="@drawable/generate_flags_style"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:background="@drawable/generate_flags_style"
-                        android:textColorHint="@color/colorPrimary"
-                        android:textColor="@color/colorPrimary"
                         android:text="GENERATE FLAGS"
+                        android:textColor="@color/colorPrimary"
+                        android:textColorHint="@color/colorPrimary"
                         android:textSize="23dp"/>
 
                     <Button
@@ -71,13 +68,13 @@
                         android:layout_width="97dp"
                         android:layout_height="47dp"
                         android:layout_weight="1"
+                        android:background="@drawable/play_style"
                         android:enabled="false"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:background="@drawable/play_style"
-                        android:textColorHint="@color/colorPrimary"
-                        android:textColor="@color/colorPrimary"
                         android:text="PLAY"
+                        android:textColor="@color/colorPrimary"
+                        android:textColorHint="@color/colorPrimary"
                         android:textSize="23dp"/>
 
                 </LinearLayout>
@@ -91,8 +88,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tvCircle"
@@ -135,8 +132,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tvFlags"
@@ -222,11 +219,11 @@
             <!--</LinearLayout>-->
 
             <LinearLayout
-                android:id="@+id/ll_team_sharing"
+                android:id="@+id/llTeamSharing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvPlayersNames"
@@ -242,7 +239,7 @@
                     android:textStyle="bold"/>
 
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rv_team_sharing"
+                    android:id="@+id/rvTeamSharing"
                     android:layout_width="match_parent"
                     android:layout_height="120dp"
                     android:layout_marginLeft="10dp"
@@ -250,7 +247,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ll_choose_team"
+                android:id="@+id/llChooseTeam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -282,7 +279,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ll_flag_info"
+                android:id="@+id/llFlagInfo"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
@@ -295,10 +292,10 @@
                         android:id="@+id/btnPickFlag"
                         android:layout_width="44dp"
                         android:layout_height="60dp"
-                        android:layout_marginRight="5dp"
-                        android:background="@drawable/flag_style"
+                        android:layout_alignParentEnd="true"
                         android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"/>
+                        android:layout_marginRight="5dp"
+                        android:background="@drawable/flag_style"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
